@@ -1,0 +1,72 @@
+RECURSO;nome fantasia;codigo;DESCRICAO;
+Índice de Impacto das Mudanças Climáticas (2015);Impacto (2015);A;;É o impacto atual das mudanças climáticas em sistemas naturais e humanos resultante de fatores de vulnerabilidade, exposição e clima.
+Índice de Impacto das Mudanças Climáticas (2020) - Cenário Otimista;Impacto (2020) - Otimista;B;;É o impacto das mudanças climáticas, projetado para 2020 em um cenário otimista, em sistemas naturais e humanos resultante de fatores de vulnerabilidade, exposição e clima.
+Índice de Impacto das Mudanças Climáticas (2030) - Cenário Otimista;Impacto (2030) - Otimista;C;;É o impacto das mudanças climáticas, projetado para 2030 em um cenário otimista, em sistemas naturais e humanos resultante de fatores de vulnerabilidade, exposição e clima.
+Índice de Impacto das Mudanças Climáticas (2040) - Cenário Otimista;Impacto (2040) - Otimista;D;;É o impacto das mudanças climáticas, projetado para 2040 em um cenário otimista, em sistemas naturais e humanos resultante de fatores de vulnerabilidade, exposição e clima.
+Índice de Impacto das Mudanças Climáticas (2050) - Cenário Otimista;Impacto (2050) - Otimista;E;;É o impacto das mudanças climáticas, projetado para 2050 em um cenário otimista, em sistemas naturais e humanos resultante de fatores de vulnerabilidade, exposição e clima.
+Índice de Impacto das Mudanças Climáticas (2020) - Cenário Pessimista;Impacto (2020) - Pessimista;F;;É o impacto das mudanças climáticas, projetado para 2020 em um cenário pessimista, em sistemas naturais e humanos resultante de fatores de vulnerabilidade, exposição e clima.
+Índice de Impacto das Mudanças Climáticas (2030) - Cenário Pessimista;Impacto (2030) - Pessimista;G;;É o impacto das mudanças climáticas, projetado para 2030 em um cenário pessimista, em sistemas naturais e humanos resultante de fatores de vulnerabilidade, exposição e clima.
+Índice de Impacto das Mudanças Climáticas (2040) - Cenário Pessimista;Impacto (2040) - Pessimista;H;;É o impacto das mudanças climáticas, projetado para 2040 em um cenário pessimista, em sistemas naturais e humanos resultante de fatores de vulnerabilidade, exposição e clima.
+Índice de Impacto das Mudanças Climáticas (2050) - Cenário Pessimista;Impacto (2050) - Pessimista;I;;É o impacto das mudanças climáticas, projetado para 2050 em um cenário pessimista, em sistemas naturais e humanos resultante de fatores de vulnerabilidade, exposição e clima.
+Índice de Vulnerabilidade às Mudanças Climáticas (2015);Vulnerabilidade (2015);J;;É a propensão ou predisposição atual do sistema socioecológico ser afetado por mudanças climáticas.
+Índice de Exposição às Mudanças Climáticas (2015);Exposição (2015);K;;É a distribuição de elementos de superfície que possam contribuir com a magnitude do contato entre o sistema socioecológico e as perturbações climáticas.
+Índice Climático de Seca (2015);Índice de Seca (2015);L;;São as variações climáticas em relação à seca com base em um intervalo climático normal de 30 anos.
+Índice Climático de Seca (2020) - Cenário Otimista;Índice de Seca (2020) - Otimista;M;;
+Índice Climático de Seca (2030) - Cenário Otimista;Índice de Seca (2030) - Otimista;N;;
+Índice Climático de Seca (2040) - Cenário Otimista;Índice de Seca (2040) - Otimista;O;;
+Índice Climático de Seca (2050) - Cenário Otimista;Índice de Seca (2050) - Otimista;P;;
+Índice Climático de Seca (2020) - Cenário Pessimista;Índice de Seca (2020) - Pessimista;Q;;
+Índice Climático de Seca (2030) - Cenário Pessimista;Índice de Seca (2030) - Pessimista;R;;
+Índice Climático de Seca (2040) - Cenário Pessimista;Índice de Seca (2040) - Pessimista;S;;
+Índice Climático de Seca (2050) - Cenário Pessimista;Índice de Seca (2050) - Pessimista;T;;
+Índice de Sensibilidade às Mudanças Climáticas (2015);Sensibilidade (2015);U;;
+Índice de Capacidade de Resposta às Mudanças Climáticas (2015);Capacidade de Resposta (2015);V;;
+Oferta e demanda de Recursos Hídricos (2015);Oferta e demanda de Recursos Hídricos (2015);1.1;;
+Eficiência no uso da água (2015);Eficiência no uso da água (2015);1.2;;
+Saneamento básico e acesso aos recursos hídricos (2015);Saneamento básico e acesso aos recursos hídricos (2015);1.3;;
+Qualidade da água e riscos à saúde humana (2015);Qualidade da água e riscos à saúde humana (2015);1.4;;
+Planos ou ações emergenciais e/ou estruturais (2015);Planos ou ações emergenciais e/ou estruturais (2015);2.1;;
+Gestão dos recursos hídricos (2015);Gestão dos recursos hídricos (2015);2.2;;
+Capacidade socioeconômica familiar (2015);Capacidade socioeconômica familiar (2015);2.3;;
+Exposição Biofísica (2015);Exposição Biofísica (2015);3.1;;
+Ocupação no Espaço (2015);Ocupação no Espaço (2015);3.2;;
+Área do município com balanço hídrico deficitário (2015);Balanço Hídrico deficitário (2015);1.1.1;"Percentual de área do município com balanço hídrico classificado como “preocupante”, “crítico” e/ou “muito crítico"" ";
+Demanda hídrica para abastecimento humano (2014);Demanda Hídrica (2014);1.1.2;Percentual da demanda hídrica do município destinada ao abastecimento humano (urbano e rural);
+Produção per capita de água (2015);Produção per capita de água (2015);1.1.3;Volume de água produzido per capita;
+Perdas no sistema de abastecimento de água (2015);Perdas de água (2015);1.2.1;Índice de perdas na distribuição do sistema de abastecimento de água;
+Consumo per capita de água (2015);Consumo per capita de água (2015);1.2.2;Consumo médio per capita de água;
+População atendida pela rede de abastecimento de água (2015);Abastecimento de água (2015);1.3.1;Percentual da população atendida pela rede de abastecimento de água no município;
+População atendida pela rede de esgotamento sanitário (2015);Esgotamento sanitário (2015);1.3.2;Percentual da população atendida pela rede de esgotamento sanitário no município;
+ Índice de tratamento de esgoto  (2015);Índice de tratamento de esgoto  (2015);1.3.3; Índice de tratamento de esgoto ;
+População com abastecimento de água em cisternas ou poços (2010);Abastecimento por cisternas ou poços (2010);1.3.4; Percentual da população com abastecimento de água da chuva armazenada em cisternas ou com disponibilidade de poço ou nascente;
+Cobrança pelo uso dos recursos hídricos (2015);Cobrança pela água (2015);1.3.5; Taxa de crescimento anual da tarifa cobrada pelo uso dos recursos hídricos;
+Doenças relacionadas ao saneamento ambiental inadequado (2008);Ocorrência de doenças (2008);1.4.1;Ocorrência de doenças relacionadas ao saneamento ambiental inadequado per capita;
+Domicílios inadequados para habitação (2010);Domicílios inadequados (2010);1.4.2;Pecentual de domicílios inadequados  (por tipo de banheiro);
+Qualidade da água (2015);Qualidade da água (2015);1.4.3;Incidência de análise de coliformes fecais fora do padrão;
+População atendida por carro pipa (2010);Abastecimento por carro pipa (2010);2.1.1;Percentual da População municipal atendida pela Operação Carro Pipa;
+Planos de Contingência para desastres ambientais (2010);Planos de Contingência para desastres ambientais (2010);2.1.2;Existência de Planos de Contingência para desastres ambientais;
+;Cidades Resilientes;2.1.3;Adesão ao Programa Cidade Resilientes;
+Planos de Gerenciamento dos Recursos Hídricos (2016);Planos de Gerenciamento dos Recursos Hídricos (2016);2.2.1;Nível de implentação de Planos de Gerenciamento dos Recursos Hídricos do Comitê de Bacia;
+Despoluição de Bacias Hidrográficas (2013);Despoluição de Bacias Hidrográficas (2013);2.2.2;Despoluição de Bacias Hidrográficas (PRODES+ETE's);
+Agenda 21 Local (2008);Agenda 21 Local (2008);2.2.3;Agenda 21 Local em fase de elaboração e/ou estágio atual;
+Índice de Theil (2010);Índice de Theil (2010);2.3.1;Índice de Theil ;
+Pessoas pobres (2010);Pessoas pobres (2010);2.3.2;Percentual de pessoas pobres;
+Cobertura vegetal em Áreas de Preservação Permanente (2015);Cobertura vegetal em APP's (2015);3.1.1;Proporção de cobertura natural em Áreas de Preservação Pemanente (APP) de curso d'água;
+Áreas antropizadas ou impermeáveis (2015);Áreas antropizadas ou impermeáveis (2015);3.1.2;Porpoção de áreas antropizadas ou impermeáveis;
+Áreas com declive acentuado e sem cobertura vegetal (2015);Áreas com declive acentuado e sem cobertura vegetal (2015);3.1.3;Porporção de áreas com 20% ou mais de declividade sem cobertura arbóreo-arbustiva, quando estas apresentam mais de 25% do território do município;
+Evapotranspiração Potencial (2015);Evapotranspiração Potencial (2015);3.1.4;Evapotranspiração Potencial;
+População residente (2015);População residente (2015);3.2.1;População Residente;
+População longe de corpos d'água e estradas (2015);População longe de corpos d'água e estradas (2015);3.2.2;Áreas com população rural a mais de 2 km de distância aos principais açudes/ rios perenes ou estradas (leito ou asfaltada);
+Contribuição percentual do indicador simples na composição do Índice de Impacto (2015);Contribuição percentual do indicador simples na composição do Índice de Impacto (2015);ContA;Contribuição percentual do indicador simples na composição do Índice de Impacto (2015);
+Contribuição percentual do indicador simples na composição do Índice de Impacto (2020) - Otimista;Contribuição percentual do indicador simples na composição do Índice de Impacto (2020) - Otimista;ContB;Contribuição percentual do indicador simples na composição do Índice de Impacto (2020) - Otimista;
+Contribuição percentual do indicador simples na composição do Índice de Impacto (2030) - Otimista;Contribuição percentual do indicador simples na composição do Índice de Impacto (2030) - Otimista;ContC;Contribuição percentual do indicador simples na composição do Índice de Impacto (2030) - Otimista;
+Contribuição percentual do indicador simples na composição do Índice de Impacto (2040) - Otimista;Contribuição percentual do indicador simples na composição do Índice de Impacto (2040) - Otimista;ContD;Contribuição percentual do indicador simples na composição do Índice de Impacto (2040) - Otimista;
+Contribuição percentual do indicador simples na composição do Índice de Impacto (2050) - Otimista;Contribuição percentual do indicador simples na composição do Índice de Impacto (2050) - Otimista;ContE;Contribuição percentual do indicador simples na composição do Índice de Impacto (2050) - Otimista;
+Contribuição percentual do indicador simples na composição do Índice de Impacto (2020) - Pessimista;Contribuição percentual do indicador simples na composição do Índice de Impacto (2020) - Pessimista;ContF;Contribuição percentual do indicador simples na composição do Índice de Impacto (2020) - Pessimista;
+Contribuição percentual do indicador simples na composição do Índice de Impacto (2030) - Pessimista;Contribuição percentual do indicador simples na composição do Índice de Impacto (2030) - Pessimista;ContG;Contribuição percentual do indicador simples na composição do Índice de Impacto (2030) - Pessimista;
+Contribuição percentual do indicador simples na composição do Índice de Impacto (2040) - Pessimista;Contribuição percentual do indicador simples na composição do Índice de Impacto (2040) - Pessimista;ContH;Contribuição percentual do indicador simples na composição do Índice de Impacto (2040) - Pessimista;
+Contribuição percentual do indicador simples na composição do Índice de Impacto (2050) - Pessimista;Contribuição percentual do indicador simples na composição do Índice de Impacto (2050) - Pessimista;ContI;Contribuição percentual do indicador simples na composição do Índice de Impacto (2050) - Pessimista;
+Contribuição percentual do indicador simples na composição do Índice de Vulnerabilidade (2015);Contribuição percentual do indicador simples na composição do Índice de Vulnerabilidade (2015);ContV;Contribuição percentual do indicador simples na composição do Índice de Vulnerabilidade (2015);
+Contribuição percentual do indicador simples na composição do Índice de Exposição (2015);Contribuição percentual do indicador simples na composição do Índice de Exposição (2015);ContEX;Contribuição percentual do indicador simples na composição do Índice de Exposição (2015);
+Contribuição percentual do indicador simples na composição do Índice de Sensibilidade (2015);Contribuição percentual do indicador simples na composição do Índice de Sensibilidade (2015);ContS;Contribuição percentual do indicador simples na composição do Índice de Sensibilidade (2015);
+Contribuição percentual do indicador simples na composição do Índice de Capacidade de Resposta (2015);Contribuição percentual do indicador simples na composição do Índice de Capacidade de Resposta (2015);ContCR;Contribuição percentual do indicador simples na composição do Índice de Capacidade de Resposta (2015);
