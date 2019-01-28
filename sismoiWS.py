@@ -26,16 +26,9 @@ def getACity(id):
     return jsonify ([{'id': row[0], 'name' : row[1], 'value' : row[2]} for row in cur.fetchall()])
 
 if __name__ == "__main__":
-  app.run(host='127.0.0.1',port=5000, debug=True)
-from flask import Flask
-from flask import jsonify
-import psycopg2
-
-try:
-    conn = psycopg2.connect("dbname='sismoi' user='postgres' host='127.0.0.1' password='142857'")
-    cur = conn.cursor()
-except:
-    print("I am unable to connect to the database")
-    exit()
-
-
+    try:
+        conn = psycopg2.connect("dbname='sismoi' user='postgres' host='127.0.0.1' password='142857'")
+        cur = conn.cursor()
+    except:
+        print("I am unable to connect to the database")
+        exit()
