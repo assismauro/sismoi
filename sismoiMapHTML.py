@@ -171,5 +171,5 @@ def map(pIndicador):
 
     m.save(r'C:\inetpub\wwwroot\sismoi.html')
 
-map(10)
+map(8)
 print('TheEnd')

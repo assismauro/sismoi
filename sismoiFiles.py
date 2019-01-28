@@ -128,28 +128,40 @@ totais_colunas =\
 }
 '''
 
+totais_dados =\
+'''    "id": {0},
+    "municipio": "{1}",
+	"impacto": {2}'''
+
 colorMap = ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641']
 
 indicadores_impacto_agua_otimista_evolucao_num_municipios = ['A','B','C','D','E']
 indicadores_impacto_agua_pessimista_evolucao_num_municipios = ['A','F','G','H','I']
 
-indicadores = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V']
+indicadores = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','1.1','1.2','1.3','1.4','2.1','2.2','2.3','3.1','3.2',
+               '1.1.1','1.1.2','1.1.3','1.2.1','1.2.2','1.3.1','1.3.2','1.3.3','1.3.4','1.3.5','1.4.1','1.4.2','1.4.3','2.1.1','2.1.2','2.1.3','2.2.1','2.2.2',
+               '2.2.3','2.3.1','2.3.2','3.1.1','3.1.2','3.1.3','3.1.4','3.2.1','3.2.2']
 
 indicadoresRange = np.arange(0, 1 + 0.2, 0.2)
 
 nomeFaixas = ['muito_baixo','baixo','medio','alto','muito_alto']
 
-indicadoresFname = r'D:\Atrium\Projects\SISMOI\DADOS\indicadores.csv'
-valoresFname = r'D:\Atrium\Projects\SISMOI\DADOS\valores.xlsx'
-geojasontemplatefname = 'vw_indicadores_ceara_simplified100.geojson'
+inputdir = r'E:\mauro.assis\sismoi\files''\\'
 
-rootdir = r'D:\Atrium\Projects\SISMOI\sismoi_files'
+indicadoresFname = inputdir + 'indicadores.csv'
+valoresFname = inputdir + r'valores.xlsx'
+geojasontemplatefname = inputdir + 'vw_indicadores_ceara_simplified100.geojson'
+
+outputdir = r'G:\SISMOI\sismoi_files'
 
 evolucaodir = 'Evolucao'
 municipiosdir = 'Municipios'
 tendenciasdir = 'Tendencia'
 mapadir = 'Mapa'
-totaisdir = 'Mapa'
+totaisdir = 'Totais'
+
+def fixnomeindicador(indicador):
+    return unidecode(indicador).replace(' ','_').replace('(','').replace(')','').replace('/','_')
 
 def make_dir(path):
     if os.path.isdir(path):
@@ -165,15 +177,15 @@ def make_dir(path):
             else: raise
 
 def copyFiles(psourcedir,pdestdir):
-    sourcedir=r'{0}\{1}'.format(rootdir,psourcedir)
-    destdir=r'{0}\{1}'.format(rootdir,pdestdir)
-    make_dir(r'{0}\{1}'.format(rootdir,pdestdir))
+    sourcedir=r'{0}\{1}'.format(outputdir, psourcedir)
+    destdir=r'{0}\{1}'.format(outputdir, pdestdir)
+    make_dir(r'{0}\{1}'.format(outputdir, pdestdir))
     for filename in glob.glob(os.path.join(sourcedir, '*.*')):
         shutil.copy(filename, destdir)
 
 def saveJson(dirname,fname,content):
-    make_dir(r'{0}\{1}'.format(rootdir,dirname))
-    fname='{0}\{1}\{2}'.format(rootdir,dirname,fname)
+    make_dir(r'{0}\{1}'.format(outputdir, dirname))
+    fname='{0}\{1}\{2}'.format(outputdir, dirname, fname)
     if fname.find('.') < 0: # não tem extensão...
         fname=fname+'.json'
     fname=unidecode(fname)
@@ -182,10 +194,17 @@ def saveJson(dirname,fname,content):
         x_file.write(content)
 
 def featureColor(value):
-    return colorMap[0] if (value >= 0.0 and value <= 0.2) else\
-           colorMap[1] if (value > 0.2 and value <= 0.4) else\
-           colorMap[2] if (value > 0.4 and value <= 0.6) else\
-           colorMap[3] if (value > 0.6 and value <= 0.8) else\
+    '''
+    >= 0   <= 0.2 => muito baixo
+    >  0.2 <= 0.4 => baixo
+    >  0.4 <= 0.6 => médio
+    >  0.6 <= 0.8 => alto
+    >  0.8        => muito alto
+    '''
+    return colorMap[0] if (value >= 0.0 and value <= 0.2) else  \
+           colorMap[1] if (value > 0.2 and value <= 0.4) else   \
+           colorMap[2] if (value > 0.4 and value <= 0.6) else   \
+           colorMap[3] if (value > 0.6 and value <= 0.8) else   \
            colorMap[4]
 
 def genEvolucao(valores):
@@ -227,14 +246,16 @@ def genMunicipios(definicoes,valores):
         valfiltered = valores.loc[valores['Tipo'] == tipo]
         for index, row in valfiltered.iterrows():
             destdir=unidecode(r'{0}\{1}'.format(municipiosdir,row['Municipios'])).replace(' ','_')
-            s = '{'+template_indice_de_seca_por_municipio_composicao.format(index + 1, row['J'], row['K'],row['L'], 2005)+'}'
-            saveJson(destdir,'indice_de_seca_por_municipio_composicao'+('_Seca' if tipo == 'S' else '_Chuva'),'[{0}]'.format(s))
-            saveJson(destdir,'impacto_agua__seca__detalhe_por_municipio__contribuicao_colunas'+(
-                '_Seca' if tipo == 'S' else '_Chuva'),impacto_agua__seca__detalhe_por_municipio__contribuicao_colunas)
             s=''
             i=1
-            for codigo in ['A','B','C','D','E','F','G','H','I']:
-                nomeindicador = unidecode(definicoes.loc[definicoes['codigo'] == codigo]['nome fantasia'].values[0]).replace(' ','_').replace('(','').replace(')','')
+            for codigo in indicadores:
+                nomeindicador = fixnomeindicador(definicoes.loc[definicoes['codigo'] == codigo]['nome fantasia'].values[0])
+                saveJson(destdir, 'impacto_agua__seca__detalhe_por_municipio__contribuicao_colunas' + (
+                    '_Seca' if tipo == 'S' else '_Chuva'),
+                         impacto_agua__seca__detalhe_por_municipio__contribuicao_colunas)
+                s = '{' + template_indice_de_seca_por_municipio_composicao.format(index + 1, row['J'], row['K'],
+                                                                                  row['L'], 2005) + '}'
+                #            saveJson(destdir,'indice_de_seca_por_municipio_composicao'+('_Seca' if tipo == 'S' else '_Chuva'),'[{0}]'.format(s))
                 for column in valfiltered.columns:
                     if column.startswith('Cont'+codigo+'_'):
                         try:
@@ -252,22 +273,30 @@ def genTendencia():
     print('Gerando Tendencia...')
     copyFiles(evolucaodir,tendenciasdir)
 
-def getTotais(valores):
+def genTotais(definicoes,valores):
     print('Gerando Totais...')
     for tipo in ['S','C']:
         valfiltered = valores.loc[valores['Tipo'] == tipo]
-        for faixa in nomeFaixas:
-            saveJson(evolucaodir,'impacto_agua_otimista_evolucao_tabela_colunas'+('_Seca' if tipo == 'S' else '_Chuva'),template_impacto_agua_evolucao_tabela_colunas)
-            for codigo in ['A','B','C','D','E','F','G','H','I']:
-                indicador = definicoes.loc[definicoes['codigo'] == codigo]
-                nomeindicador = unidecode(indicador['nome fantasia'].values[0]).replace(' ','_').replace('(','').replace(')','')
-                for faixa in nomeFaixas:
-                    saveJson(totaisdir,'{0}_{1}_totais_baixo_colunas.json'.format(nomeindicador,'_Seca' if tipo == 'S' else '_Chuva'))
-
+        for codigo in indicadores:
+            indicador = definicoes.loc[definicoes['codigo'] == codigo]
+            nomeindicador = fixnomeindicador(indicador['nome fantasia'].values[0])
+            for f in np.arange(0, 1, 0.2):
+                rangefiltered = valfiltered[
+                    (valfiltered[codigo] > (f if f > 0 else -1.0)) & (valfiltered[codigo] <= (f + 0.2))]
+                if rangefiltered[codigo].count() == 0:
+                    continue
+                s='[\n'
+                for index, row in rangefiltered.iterrows():
+                    s+='  {\n'+totais_dados.format(index,row['Municipios'],row[codigo])+'\n  },\n'
+                saveJson(totaisdir,'{0}_{1}_totais_{2}_colunas.json'.format(nomeindicador,'_Seca' if tipo == 'S' else '_Chuva',
+                         nomeFaixas[int(f*10/2)]),
+                         template_impacto_agua_evolucao_tabela_colunas)
+                saveJson(totaisdir,'{0}_{1}_totais_{2}_dados.json'.format(nomeindicador,'_Seca' if tipo == 'S' else '_Chuva',
+                         nomeFaixas[int(f*10/2)]),s[:-2]+'\n]')
 
 def genMaps(definicoes,valores):
     print('Gerando mapas municipio...')
-    with open('ceara3.geojson') as f:
+    with open(inputdir +'ceara.geojson') as f:
         map = json.load(f)
     for tipo in ['S','C']:
         valfiltered = valores.loc[valores['Tipo'] == tipo]
@@ -276,12 +305,11 @@ def genMaps(definicoes,valores):
                 row = valfiltered.loc[valfiltered['geocod'] == map['features'][i]['properties']['geocod']]
                 map['features'][i]['properties']['valor'] = float(row[indicador])
                 map['features'][i]['properties']['style']['fillColor']=featureColor(float(row[indicador]))
-            fname=definicoes.loc[definicoes['codigo'] == indicador]['nome fantasia'].values[0].\
-                      replace(' ','_').replace('(','').replace(')','')+('_Seca' if tipo == 'S' else '_Chuva')+'.geojson'
+            fname=fixnomeindicador(definicoes.loc[definicoes['codigo'] == indicador]['nome fantasia'].values[0]+('_Seca' if tipo == 'S' else '_Chuva')+'.geojson')
             saveJson(mapadir,fname,json.dumps(map))
 
     print("Gerando mapas mesorregiao...")
-    with open('ceara_mesorregiao2.geojson') as f:
+    with open(inputdir + 'ceara_mesorregiao.geojson') as f:
         map = json.load(f)
     for tipo in ['S','C']:
         valfiltered = (valores.loc[valores['Tipo'] == tipo]).groupby(['cd_geocme'], as_index=False).mean()
@@ -290,10 +318,8 @@ def genMaps(definicoes,valores):
                 row = valfiltered.loc[valfiltered['cd_geocme'] == float(map['features'][i]['properties']['cd_geocme'])]
                 map['features'][i]['properties']['valor'] = float(row[indicador])
                 map['features'][i]['properties']['style']['fillColor']=featureColor(map['features'][i]['properties']['valor'])
-            fname=definicoes.loc[definicoes['codigo'] == indicador]['nome fantasia'].values[0].\
-                      replace(' ','_').replace('(','').replace(')','')+('_Seca' if tipo == 'S' else '_Chuva')+'_mesoregiao.geojson'
+            fname=fixnomeindicador(definicoes.loc[definicoes['codigo'] == indicador]['nome fantasia'].values[0]+('_Seca' if tipo == 'S' else '_Chuva')+'_mesoregiao.geojson')
             saveJson(mapadir,fname,json.dumps(map))
-    print()
 
 if __name__ == '__main__':
     definicoes = pd.read_csv(indicadoresFname,sep=';',encoding = "latin1", engine='python',header=0)
@@ -302,5 +328,5 @@ if __name__ == '__main__':
     genTendencia()
     genMaps(definicoes,valores)
     genMunicipios(definicoes,valores)
-    getTotais()
+    genTotais(definicoes,valores)
     print('Done')
