@@ -65,7 +65,7 @@ Retorna a geometria de um determinado mapa.
 
 #### Parâmetros:
 
-**clipping:** recorte do mapa. Alternativas: **semiárido** ou um dos seguintes estados: SE, PE, MG', CE, BA, PI, AL, PB, RN', MA
+**clipping:** recorte do mapa. Alternativas: **semiarido** ou um dos seguintes estados: SE, PE, MG', CE, BA, PI, AL, PB, RN', MA
 **resolution:** resolução do mapa. Alternativas: microrregiao, mesorregiao, municipio, estado
 
 #### Exemplo de chamada:
@@ -137,7 +137,7 @@ Retorna os dados associados aos polígonos.
 
 #### Parâmetros:
 
-**clipping:** recorte do mapa. Alternativas: **semiárido** ou um dos seguintes estados: SE, PE, MG', CE, BA, PI, AL, PB, RN', MA
+**clipping:** recorte do mapa. Alternativas: **semiarido** ou um dos seguintes estados: SE, PE, MG', CE, BA, PI, AL, PB, RN', MA
 
 **resolution:** resolução do mapa. Alternativas: microrregiao, mesorregiao, municipio, estado
 
@@ -145,7 +145,7 @@ Retorna os dados associados aos polígonos.
 
 **scenario_id:** cenário a ser selecionado, O, P ou null quando o indicador não tiver.
 
-**county_id:** no caso de mapa, será sempre **all** 
+**county_id:** no caso de mapa, deverá ser sempre **all** 
 
 **year:** ano a ser filtrado
 
@@ -157,19 +157,19 @@ curl -i http://127.0.0.1:5000/sismoi/getMapData/clipping=PE,resolution=municipio
 
 #### Retorno: 
 
-jason contendo registros pesquisados. A estrutura varia de acordo com a resolução. Exemplo para 
+jason contendo registros encontrados. A estrutura varia de acordo com a resolução. Exemplo para resolução **microrregiao**
 
 #### Descição dos campos do json:
 
 **id:** do valor.
 
-**indicator_id:** id do indicador a ser exibido
+**indicator_id:** id do indicador
 
-**scenario_id:** cenário a ser selecionado, O, P ou null quando o indicador não tiver.
+**scenario_id:** id do cenário ou null, se não for cabível.
 
-**county_id:** no caso de mapa, será sempre **all** 
+**county_id:** id do município 
 
-**year:** ano a ser filtrado
+**year:** ano 
 
 **value:** valor do indicador
 
@@ -224,6 +224,138 @@ jason contendo registros pesquisados. A estrutura varia de acordo com a resoluç
       "county_id":139,
       "year":2015,
       "value":0.416
+   }
+]
+```
+
+### d) getTotal
+
+Retorna a contagem de valores por município em um determinado recorte. A resolução será sempre **municipio**.
+
+#### Parâmetros:
+
+**clipping:** recorte do mapa. Alternativas: **semiarido** ou um dos seguintes estados: SE, PE, MG', CE, BA, PI, AL, PB, RN', MA
+
+**indicator_id:** id do indicador a ser exibido
+
+**scenario_id:** cenário a ser selecionado, O, P ou null quando o indicador não tiver.
+
+**year:** ano a ser filtrado
+
+#### Exemplo de chamada:
+
+```
+curl -i http://127.0.0.1:5000/sismoi/getTotal/clipping=semiarido,indicator_id=24,scenario_id=1,year=2050
+```
+
+#### Retorno: 
+
+jason contendo registros encontrados. 
+
+#### Descição dos campos do json:
+
+**indicator_id:** Código do indicador.
+
+**year:** ano 
+
+**scenario_id:** cenário a ser selecionado, O, P ou null quando o indicador não tiver.
+
+**verylow:** número de municípios com o valor do indicador entre 0 e 0,2.
+
+**low:** número de municípios com o valor do indicador entre 0,2 e 0,4.
+
+**mid:** número de municípios com o valor do indicador entre 0,4 e 0,6.
+
+**high:** número de municípios com o valor do indicador entre 0,6 e 0,8.
+
+**veryhigh:** número de municípios com o valor do indicador entre 0,8 e 1.
+
+#### Exemplo de retorno (é retornado apenas um registro por vez):
+
+```
+[  
+   {  
+      "indicator_id":24,
+      "year":2050,
+      "scenario_id":1,
+      "verylow":4,
+      "low":293,
+      "mid":457,
+      "high":241,
+      "veryhigh":267,
+      "total":1262
+   }
+]
+```
+
+### e) getEvolution ###
+
+Evolução da contagem de valores por município em um determinado recorte ao longo dos anos de um indicador. A resolução será sempre **municipio**.
+
+#### Parâmetros:
+
+**clipping:** recorte do mapa. Alternativas: **semiarido** ou um dos seguintes estados: SE, PE, MG', CE, BA, PI, AL, PB, RN', MA
+
+**indicator_id:** id do indicador a ser exibido
+
+**scenario_id:** cenário a ser selecionado, O, P ou null quando o indicador não tiver.
+
+#### Exemplo de chamada:
+
+```
+curl -i http://127.0.0.1:5000/sismoi/getEvolution/clipping=semiarido,indicator_id=24,scenario_id=1
+```
+
+#### Retorno: 
+
+jason contendo registros encontrados. A estrutura varia de acordo com a resolução. Exemplo para 
+
+#### Descição dos campos do json:
+
+**indicator_id:** Código do indicador.
+
+**year:** ano 
+
+**scenario_id:** cenário indicado, O, P ou null quando o indicador não tiver.
+
+**value:** valor do indicador
+
+#### Exemplo de retorno (alguns registros de uma consulta):
+
+```
+[  
+   {  
+      "indicator_id":24,
+      "year":2015,
+      "scenario_id":null,
+      "verylow":4,
+      "low":294,
+      "mid":503,
+      "high":114,
+      "veryhigh":428,
+      "total":1262
+   },
+   {  
+      "indicator_id":24,
+      "year":2030,
+      "scenario_id":1,
+      "verylow":5,
+      "low":292,
+      "mid":423,
+      "high":120,
+      "veryhigh":422,
+      "total":1262
+   },
+   {  
+      "indicator_id":24,
+      "year":2050,
+      "scenario_id":1,
+      "verylow":4,
+      "low":293,
+      "mid":457,
+      "high":241,
+      "veryhigh":267,
+      "total":1262
    }
 ]
 ```
