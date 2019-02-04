@@ -93,14 +93,14 @@ curl -i http://127.0.0.1:5000/sismoi/getGeometry/clipping=SE,resolution=microrre
 
 #### Retorno: 
 
-jason contendo os dados. Há informações de projeção e uma propriedade chamada **features**, que contém propriedades para cada registro do mapa. 
+json contendo os dados. Há informações de projeção e uma propriedade chamada **features**, que contém propriedades para cada registro do mapa. 
 
 #### Descição dos campos do json:
 
  - **id:** da feature.
  - **name:** nome da feature.
 
-#### Exemplo de retorno (2 registros, resolucao "municipio". Foram retiradas algumas coordenadas geográficas por razões de espaço):
+#### Exemplo de retorno (2 registros, resolucao "municipio". Foram retiradas coordenadas geográficas por razões de espaço):
 
 ```json
 {
@@ -116,7 +116,8 @@ jason contendo os dados. Há informações de projeção e uma propriedade chama
       "type": "Feature",
       "properties": {
         "id": 21,
-        "nome": "Acaraú",
+        "uf": "CE",
+        "name": "Acaraú"
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -146,6 +147,14 @@ jason contendo os dados. Há informações de projeção e uma propriedade chama
               [
                 -40.086645,
                 -2.831316
+              ],
+              [
+                -40.076759,
+                -2.840906
+              ],
+              [
+                -40.331121,
+                -2.805455
               ]
             ]
           ]
@@ -156,7 +165,8 @@ jason contendo os dados. Há informações de projeção e uma propriedade chama
       "type": "Feature",
       "properties": {
         "id": 3991,
-        "nome": "Potiretama",
+        "uf": "CE",
+        "name": "Potiretama"
       },
       "geometry": {
         "type": "MultiPolygon",
@@ -176,16 +186,17 @@ jason contendo os dados. Há informações de projeção e uma propriedade chama
                 -5.651755
               ],
               [
-                -38.14854,
-                -5.659175
+                -38.203981,
+                -5.634789
               ]
-           ]
+            ]
           ]
         ]
       }
     }
   ]
 }
+
 ```
 
 ### c) getMapData
@@ -208,7 +219,7 @@ curl -i http://127.0.0.1:5000/sismoi/getMapData/clipping=PE,resolution=municipio
 
 #### Retorno: 
 
-jason contendo registros pesquisados. A estrutura varia de acordo com a resolução. Exemplo para 
+json contendo registros pesquisados. A estrutura varia de acordo com a resolução. Exemplo para 
 
 #### Descição dos campos do json:
 
