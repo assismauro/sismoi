@@ -5,7 +5,7 @@ Abaixo a descrição dos webservices do SISMOI, seus parâmetros e retornos.
 
 ### a) getHierarchy
 
-Retorna a lista de todos os indicadores do SISMOI, bem como a hierarquia existente entre eles.
+Retorna a lista de todos os indicadores do SISMOI, juntamente com as suas descrições, bem como a hierarquia existente entre eles.
 
 #### Parâmetros:
 Nenhum
@@ -17,30 +17,21 @@ curl -i http://127.0.0.1:5000/sismoi/getHierarchy
 ```
 #### Retorno: 
 
-jason contendo um registro para cada indicador. Os indicadores estão ordenados por nível(level) 
-e por código (id) dentro do nível. 
+json contendo um registro para cada indicador. Os indicadores estão ordenados por nível (level) 
+e por código (id) dentro do nível. Os níveis de valores menores são os mais acima na hierarquia.
 
 #### Descição dos campos do json:
 
-**complete description:** descrição completa do indicador.
-
-**equation:** equação de ponderação do valor do indicador (null, por enquanto)
-
-**id:** id do indicador.
-
-**indicator_id_master:** id do indicador master (indicador do qual este estará pendente na hierarquia.
-
-**level:** nível do indicador.
-
-**name:** nome do indicador.
-
-**shorname:** sigla do indicador, a ser usado na equação de ponderação (null por enquanto).
-
-**simple_description:** descrição simples do indicador.
-
-**title:** título do indicador.
-
-**years:** lista de anosem que o indicador ocorre.
+ - **complete_description:** descrição completa do indicador.
+ - **equation:** equação de ponderação do valor do indicador (null, por enquanto).
+ - **id:** id do indicador.
+ - **indicator_id_master:** id do indicador pai (indicador do qual este estará pendente na hierarquia).
+ - **level:** nível do indicador.
+ - **name:** nome do indicador.
+ - **shorname:** sigla do indicador, a ser usado na equação de ponderação (null por enquanto).
+ - **simple_description:** descrição simples do indicador.
+ - **title:** título do indicador.
+ - **years:** lista de anos em que o indicador ocorre, separados por vírgula.
 
 #### Exemplo de retorno (um registro):
 
@@ -65,8 +56,8 @@ Retorna a geometria de um determinado mapa.
 
 #### Parâmetros:
 
-**clipping:** recorte do mapa. Alternativas: **semiárido** ou um dos seguintes estados: SE, PE, MG', CE, BA, PI, AL, PB, RN', MA
-**resolution:** resolução do mapa. Alternativas: microrregiao, mesorregiao, municipio, estado
+ - **clipping:** recorte do mapa. Alternativas: "semiárido", "SE", "PE", "MG", "CE", "BA", "PI", "AL", "PB", "RN", "MA"
+ - **resolution:** resolução do mapa. Alternativas: "microrregiao", "mesorregiao", "municipio", "estado"
 
 #### Exemplo de chamada:
 
@@ -80,13 +71,10 @@ jason contendo os . Há informações de projeção e uma propriedade chamada **
 
 #### Descição dos campos do json:
 
-**id:** da feature.
-
-**nome:** nome da feature.
-
-**microrregi:** pode existir ou não, dependendo da resolução.
-
-**mesorregia:** pode existir ou não, dependendo da resolução.
+ - **id:** da feature.
+ - **nome:** nome da feature.
+ - **microrregi:** pode existir ou não, dependendo da resolução.
+ - **mesorregia:** pode existir ou não, dependendo da resolução.
 
 #### Exemplo de retorno (foram retiradas coordenadas geográficas desse exemplo):
 
@@ -137,17 +125,12 @@ Retorna os dados associados aos polígonos.
 
 #### Parâmetros:
 
-**clipping:** recorte do mapa. Alternativas: **semiárido** ou um dos seguintes estados: SE, PE, MG', CE, BA, PI, AL, PB, RN', MA
-
-**resolution:** resolução do mapa. Alternativas: microrregiao, mesorregiao, municipio, estado
-
-**indicator_id:** id do indicador a ser exibido
-
-**scenario_id:** cenário a ser selecionado, O, P ou null quando o indicador não tiver.
-
-**county_id:** no caso de mapa, será sempre **all** 
-
-**year:** ano a ser filtrado
+ - **clipping:** recorte do mapa. Alternativas: "semiárido", "SE", "PE", "MG", "CE", "BA", "PI", "AL", "PB", "RN", "MA"
+ - **resolution:** resolução do mapa. Alternativas: "microrregiao", "mesorregiao", "municipio", "estado"
+ - **indicator_id:** id do indicador a ser exibido
+ - **scenario_id:** cenário a ser selecionado, "O", "P" ou null quando o indicador não tiver.
+ - **county_id:** no caso de mapa, será sempre **all** 
+ - **year:** ano a ser filtrado
 
 #### Exemplo de chamada:
 
@@ -161,17 +144,12 @@ jason contendo registros pesquisados. A estrutura varia de acordo com a resoluç
 
 #### Descição dos campos do json:
 
-**id:** do valor.
-
-**indicator_id:** id do indicador a ser exibido
-
-**scenario_id:** cenário a ser selecionado, O, P ou null quando o indicador não tiver.
-
-**county_id:** no caso de mapa, será sempre **all** 
-
-**year:** ano a ser filtrado
-
-**value:** valor do indicador
+ - **id:** do valor.
+ - **indicator_id:** id do indicador a ser exibido
+ - **scenario_id:** cenário a ser selecionado, O, P ou null quando o indicador não tiver.
+ - **county_id:** no caso de mapa, será sempre **all** 
+ - **year:** ano a ser filtrado
+ - **value:** valor do indicador
 
 #### Exemplo de retorno (alguns registros de uma consulta):
 
