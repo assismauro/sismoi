@@ -1,0 +1,45 @@
+# Conversão dos dados ETA Hadgem e MIROC de .BIN para Netcdf a partir do arquivo .ctl
+# Realizar no Terminal Linux
+# É preciso ter os programas GRADS e CDO instalados
+____________________________________________________________________
+- 1 passo:
+Adicionar à pasta dos arquivos binários o script de conversão
+
+O script para transformação dos dados é nomeado: "convert_bin-netcdf.gs"
+
+- 2 passo:
+Abrir o Terminal e indicar o caminho da pasta pelo comando >> cd
+
+- 3 passo:
+buscar o arquivo .ctl >> ls -ltr *.ctl
+copiar o nome do arquivo template.ctl e usar o comando > more "nome do arquivo.ctl"
+verificar os tempos nos dados e apagar (caso exista) do arquivo .ctl a parte indicando "360_CALENDAR"
+
+- 4 passo:
+abir o script na pasta, caso não esteja e queira transferir de outra pasta usar o comando >> cp "nome diretorio"/"nome do script"
+editar o script pelo comando >> gedit "convert_bin-netcdf.gs"
+  editar o nome do template_ctl de acordo com a variável (PREC, MXTP, MNTP)
+  editar o nome da variável
+  editar o número de tempos
+salvar o script
+
+- 5 passo:
+# transformar pelo GRADS os arquivos .BIN para NETCDF
+digitar no terminal o comando >> grads -lc "convert_bin-netcdf.gs"
+
+- 6 passo:
+# concatenar arquivos netcdf em um único arquivo NC
+digitar no terminal o comando >> cdo cat nvar_?????.nc ofile.nc (nomeado como novo.nc)
+
+- 7 passo:
+# arrumar o calendário dos tempos para 360 dias
+# lembrar de editar o primeiro ano para o periodo desejado: "1960" - histórico e "2006" - RCPs
+digitar no terminal o comando >> cdo -r settaxis,1960-01-01,12:00,1day -setcalendar,360days ofile.nc (nomeado como novo.nc)ofile2.nc
+
+Fim
+
+_____________________________________________________________________________________________________
+
+
+
+
