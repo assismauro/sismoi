@@ -213,6 +213,9 @@ jason contendo registros pesquisados. A estrutura varia de acordo com a resoluç
 #### Descição dos campos do json:
 
  - **id:** do valor.
+ - **indicator_id:** id do indicador.
+ - **scenario_id:** id do cenário ou null.
+ - **year:** ano a ser filtrado.
  - **value:** valor do indicador.
  - **valuecolor:** cor a ser usada quando o indicador tiver que ser exibido como cor.
 
