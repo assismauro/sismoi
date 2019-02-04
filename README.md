@@ -33,21 +33,47 @@ e por código (id) dentro do nível. Os níveis de valores menores são os mais 
  - **title:** título do indicador.
  - **years:** lista de anos em que o indicador ocorre, separados por vírgula.
 
-#### Exemplo de retorno (um registro):
+#### Exemplo de retorno (três registros):
 
 ```json
-{
-  "complete_description": "Padrão de consumo do recurso hídrico e sua manutenção quanto à rede de distribuição de água. Informação resultante da composição de indicadores de perdas de água e consumo de água per capita.<br><br>Fonte:<br>Sistema Brasileiro de Monitoramento e Observação de Impactos da Mudança Climática - SISMOI",
-  "equation": null,
-  "id": 52,
-  "indicator_id_master": 31,
-  "level": 5,
-  "name": "Eficiência no Uso da Água",
-  "shortname": null,
-  "simple_description": "Padrão de consumo do recurso hídrico e sua manutenção quanto à rede de distribuição",
-  "title": " Eficiência no Uso da Água para a Chuva",
-  "years": "2015"
-}
+[
+  {
+    "id": 1,
+    "name": "Água",
+    "title": "Impactos em Água",
+    "shortname": null,
+    "simple_description": "Consequências esperadas e resultantes das mudanças climáticas em sistemas naturais e humanos relacionados à segurança hídrica",
+    "complete_description": "Este índice diz respeito aos efeitos sobre vidas, meios de subsistência, saúde, ecossistemas, economias, sociedades, culturas, serviços e infraestrutura devido a alterações climáticas ou eventos climáticos que se dão dentro de períodos específicos de tempo, vulnerabilidade e de exposição da sociedade ou sistema (IPCC, 2015), relacionados à segurança hídrica.<br><br>Referência:<br> INTERGOVERNMENTAL PANEL ON CLIMATE CHANGE - IPCC. Climate Change 2014: Synthesis Report. Working Groups I, II and III to the Fifth Assessment Report of the Intergovernmental Panel on Climate Change [Core Writing Team, R.K. Pachauri and L.A. Meyer (eds.)]. IPCC, Geneva, Switzerland, 151 pp.",
+    "equation": null,
+    "years": "2015",
+    "level": 1,
+    "indicator_id_master": null
+  },
+  {
+    "id": 2,
+    "name": "Seca",
+    "title": "Índice de Impacto para a Seca",
+    "shortname": null,
+    "simple_description": "Impacto das mudanças climáticas em sistemas naturais e humanos, considerando a perturbação climática de seca",
+    "complete_description": "Impacto das mudanças climáticas em sistemas naturais e humanos, resultante da interação entre os eventos climáticos relacionados à seca, vulnerabilidade e de exposição da sociedade ou sistema.<br><br>Fonte:<br> Sistema Brasileiro de Monitoramento e Observação de Impactos da Mudança Climática - SISMOI",
+    "equation": null,
+    "years": "2015, 2030, 2050",
+    "level": 2,
+    "indicator_id_master": 1
+  },
+  {
+    "id": 3,
+    "name": "Chuva",
+    "title": "Índice de Impacto para a Chuva",
+    "shortname": null,
+    "simple_description": "Impacto das mudanças climáticas em sistemas naturais e humanos, considerando a perturbação climática de excesso de chuva",
+    "complete_description": "Impacto das mudanças climáticas em sistemas naturais e humanos, resultante da interação entre os eventos climáticos relacionados ao excesso de chuva, vulnerabilidade e de exposição da sociedade ou sistema.<br><br>Fonte:<br> Sistema Brasileiro de Monitoramento e Observação de Impactos da Mudança Climática - SISMOI",
+    "equation": null,
+    "years": "2015, 2030, 2050",
+    "level": 2,
+    "indicator_id_master": 1
+  }
+]
 ```
 
 ### b) getGeometry
@@ -67,56 +93,99 @@ curl -i http://127.0.0.1:5000/sismoi/getGeometry/clipping=SE,resolution=microrre
 
 #### Retorno: 
 
-jason contendo os . Há informações de projeção e uma propriedade chamada **features**, que contém propriedades para cada registro do mapa. 
+jason contendo os dados. Há informações de projeção e uma propriedade chamada **features**, que contém propriedades para cada registro do mapa. 
 
 #### Descição dos campos do json:
 
  - **id:** da feature.
- - **nome:** nome da feature.
- - **microrregi:** pode existir ou não, dependendo da resolução.
- - **mesorregia:** pode existir ou não, dependendo da resolução.
+ - **name:** nome da feature.
 
-#### Exemplo de retorno (foram retiradas coordenadas geográficas desse exemplo):
+#### Exemplo de retorno (2 registros, resolucao "municipio". Foram retiradas algumas coordenadas geográficas por razões de espaço):
 
 ```json
-[
-   {
-      "type":"Feature",
-      "properties":{
-         "id":21,
-         "nome":"Acara\u00fa",
-         "geocod":2300200,
-         "uf":"CE",
-         "microrregi":266,
-         "mesorregia":60
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 21,
+        "nome": "Acaraú",
       },
-      "geometry":{
-         "type":"MultiPolygon",
-         "coordinates":[
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
             [
-               [
-                  [
-                     -40.331121,
-                     -2.805455
-                  ],
-                  [
-                     -40.216206,
-                     -2.8167
-                  ],
-                  [
-                     -40.188748,
-                     -2.812914
-                  ],
-                  [
-                     -40.331121,
-                     -2.805455
-                  ]
-               ]
+              [
+                -40.331121,
+                -2.805455
+              ],
+              [
+                -40.216206,
+                -2.8167
+              ],
+              [
+                -40.188748,
+                -2.812914
+              ],
+              [
+                -40.147872,
+                -2.839507
+              ],
+              [
+                -40.124927,
+                -2.823793
+              ],
+              [
+                -40.086645,
+                -2.831316
+              ]
             ]
-         ]
+          ]
+        ]
       }
-   }
-]
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 3991,
+        "nome": "Potiretama",
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -38.203981,
+                -5.634789
+              ],
+              [
+                -38.168162,
+                -5.645658
+              ],
+              [
+                -38.171772,
+                -5.651755
+              ],
+              [
+                -38.14854,
+                -5.659175
+              ]
+           ]
+          ]
+        ]
+      }
+    }
+  ]
+}
 ```
 
 ### c) getMapData
@@ -129,13 +198,12 @@ Retorna os dados associados aos polígonos.
  - **resolution:** resolução do mapa. Alternativas: "microrregiao", "mesorregiao", "municipio", "estado"
  - **indicator_id:** id do indicador a ser exibido
  - **scenario_id:** cenário a ser selecionado, "O", "P" ou null quando o indicador não tiver.
- - **county_id:** no caso de mapa, será sempre **all** 
  - **year:** ano a ser filtrado
 
 #### Exemplo de chamada:
 
 ```
-curl -i http://127.0.0.1:5000/sismoi/getMapData/clipping=PE,resolution=municipio,indicator_id=2,scenario_id=null,county_id=all,year=2015
+curl -i http://127.0.0.1:5000/sismoi/getMapData/clipping=PE,resolution=municipio,indicator_id=2,scenario_id=null,year=2015
 ```
 
 #### Retorno: 
@@ -145,63 +213,34 @@ jason contendo registros pesquisados. A estrutura varia de acordo com a resoluç
 #### Descição dos campos do json:
 
  - **id:** do valor.
- - **indicator_id:** id do indicador a ser exibido
- - **scenario_id:** cenário a ser selecionado, O, P ou null quando o indicador não tiver.
- - **county_id:** no caso de mapa, será sempre **all** 
- - **year:** ano a ser filtrado
- - **value:** valor do indicador
+ - **value:** valor do indicador.
+ - **valuecolor:** cor a ser usada quando o indicador tiver que ser exibido como cor.
 
 #### Exemplo de retorno (alguns registros de uma consulta):
 
 ```
-[  
-   {  
-      "id":106758,
-      "indicator_id":2,
-      "scenario_id":null,
-      "county_id":36,
-      "year":2015,
-      "value":0.416
-   },
-   {  
-      "id":106872,
-      "indicator_id":2,
-      "scenario_id":null,
-      "county_id":40,
-      "year":2015,
-      "value":0.416
-   },
-   {  
-      "id":106986,
-      "indicator_id":2,
-      "scenario_id":null,
-      "county_id":42,
-      "year":2015,
-      "value":0.416
-   },
-   {  
-      "id":107100,
-      "indicator_id":2,
-      "scenario_id":null,
-      "county_id":65,
-      "year":2015,
-      "value":0.416
-   },
-   {  
-      "id":107214,
-      "indicator_id":2,
-      "scenario_id":null,
-      "county_id":91,
-      "year":2015,
-      "value":0.416
-   },
-   {  
-      "id":107328,
-      "indicator_id":2,
-      "scenario_id":null,
-      "county_id":139,
-      "year":2015,
-      "value":0.416
-   }
+[   
+  {
+		"id": 265041,
+		"indicator_id": 2,
+		"scenario_id": null,
+		"year": 2015,
+		"value": 0.367,
+		"valuecolor": "#fdae61"
+	}, {
+		"id": 265155,
+		"indicator_id": 2,
+		"scenario_id": null,
+		"year": 2015,
+		"value": 0.532,
+		"valuecolor": "#ffffbf"
+	}, {
+		"id": 265269,
+		"indicator_id": 2,
+		"scenario_id": null,
+		"year": 2015,
+		"value": 0.372,
+		"valuecolor": "#fdae61"
+	 }
 ]
 ```
