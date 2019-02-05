@@ -82,7 +82,7 @@ Retorna a geometria de um determinado mapa.
 
 #### Parâmetros:
 
- - **clipping:** recorte do mapa. Alternativas: "semiárido", "SE", "PE", "MG", "CE", "BA", "PI", "AL", "PB", "RN", "MA"
+ - **clipping:** recorte do mapa. Alternativas: "semiarido", "SE", "PE", "MG", "CE", "BA", "PI", "AL", "PB", "RN", "MA"
  - **resolution:** resolução do mapa. Alternativas: "microrregiao", "mesorregiao", "municipio", "estado"
 
 #### Exemplo de chamada:
