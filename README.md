@@ -124,38 +124,14 @@ json contendo os dados. Há informações de projeção e uma propriedade chamad
         "coordinates": [
           [
             [
-              [
-                -40.331121,
-                -2.805455
-              ],
-              [
-                -40.216206,
-                -2.8167
-              ],
-              [
-                -40.188748,
-                -2.812914
-              ],
-              [
-                -40.147872,
-                -2.839507
-              ],
-              [
-                -40.124927,
-                -2.823793
-              ],
-              [
-                -40.086645,
-                -2.831316
-              ],
-              [
-                -40.076759,
-                -2.840906
-              ],
-              [
-                -40.331121,
-                -2.805455
-              ]
+			[-40.331121,-2.805455],
+           		[-40.216206,-2.8167],
+              		[-40.188748,-2.812914],
+              		[-40.147872,-2.839507],
+              		[-40.124927,-2.823793],
+              		[-40.086645,-2.831316],
+              		[-40.076759,-2.840906],
+              		[-40.331121,-2.805455]
             ]
           ]
         ]
@@ -173,22 +149,17 @@ json contendo os dados. Há informações de projeção e uma propriedade chamad
         "coordinates": [
           [
             [
-              [
-                -38.203981,
-                -5.634789
-              ],
-              [
-                -38.168162,
-                -5.645658
-              ],
-              [
-                -38.171772,
-                -5.651755
-              ],
-              [
-                -38.203981,
-                -5.634789
-              ]
+		[
+			[-40.331121, -2.805455],  
+			[-40.233762, -2.871358], 
+			[-40.273223, -2.869949], 
+			[-40.273521, -2.879356], 
+			[-40.282177, -2.878471], 
+			[-40.324513, -2.860845], 
+			[-40.36254, -2.865738], 
+			[-40.372259, -2.810277], 
+			[-40.331121, -2.805455]]]
+		]
             ]
           ]
         ]
@@ -219,7 +190,7 @@ curl -i http://127.0.0.1:5000/sismoi/getMapData/clipping=PE,resolution=municipio
 
 #### Retorno: 
 
-json contendo registros pesquisados. A estrutura varia de acordo com a resolução. Exemplo para 
+json contendo registros pesquisados. 
 
 #### Descição dos campos do json:
 
@@ -257,4 +228,66 @@ json contendo registros pesquisados. A estrutura varia de acordo com a resoluç�
 		"valuecolor": "#fdae61"
 	 }
 ]
+```
+
+### d) getGeometryAndData
+
+Retorna a geometria e os dados correspondentes num json cujo formato pode ser passado direto para o renderizador (OpenStreeMap).
+
+#### Parâmetros:
+
+ - **clipping:** recorte do mapa. Alternativas: "semiárido", "SE", "PE", "MG", "CE", "BA", "PI", "AL", "PB", "RN", "MA"
+ - **resolution:** resolução do mapa. Alternativas: "microrregiao", "mesorregiao", "municipio", "estado"
+ - **indicator_id:** id do indicador a ser exibido
+ - **scenario_id:** cenário a ser selecionado, "O", "P" ou null quando o indicador não tiver.
+ - **year:** ano a ser filtrado
+ 
+#### Exemplo de chamada:
+
+```
+curl -i http://127.0.0.1:5000/sismoi/getGeometryAndData/clipping=PE,resolution=municipio,indicator_id=2,scenario_id=null,year=2015
+```
+
+#### Retorno: 
+
+json contendo registros pesquisados. 
+
+#### Descição dos campos do json:
+
+ - **id:** do valor.
+ - **name:** nome do registro na resolução indicadas.
+ - **value:** valor do indicador associado ao registro.
+ - **style:** contém o "estilo" de renderização a ser entendido pelo OpenStreetMap, onde **color** é a cor da borda, **fillcolor** é a cor do interior do polígono (e varia de acordo com o valor de value) e **weight** é a espessura da linha (ver exemplo abaixo).
+ 
+ #### Exemplo de retorno (Registro de uma consulta, com as coordenadas reduzidas):
+
+```
+	"features": [{
+			"type": "Feature",
+			"properties": {
+				"id": 21,
+				"name": "Acara\u00fa",
+				"value": 0.468,
+				"style": {
+					"color": "#d7d7d7",
+					"fillcolor": "#ffffbf",
+					"weight": 1
+				}
+			},
+			"geometry": {
+				"type": "MultiPolygon",
+				"coordinates": [[
+				[
+					[-40.331121, -2.805455],  
+					[-40.233762, -2.871358], 
+					[-40.273223, -2.869949], 
+					[-40.273521, -2.879356], 
+					[-40.282177, -2.878471], 
+					[-40.324513, -2.860845], 
+					[-40.36254, -2.865738], 
+					[-40.372259, -2.810277], 
+					[-40.331121, -2.805455]]]
+				]
+			}
+		},
 ```
