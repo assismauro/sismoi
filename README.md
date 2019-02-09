@@ -301,8 +301,8 @@ Retorna informações hierárquicas sobre os indicadores que podem ser usadas em
  - **clipping:** recorte do mapa. Alternativas: "semiárido", "SE", "PE", "MG", "CE", "BA", "PI", "AL", "PB", "RN", "MA"
  - **resolution:** resolução do mapa. Alternativas: "microrregiao", "mesorregiao", "municipio", "estado"
  - **indicator_id:** id do indicador a ser exibido
- - **scenario_id:** 1 (Otimista), 2 (Pessimista) ou null quando o indicador não tiver.
- - **year:** ano a ser filtrado (***opcional:*** se não for fornecido serão retornados todos os anos).
+ - **scenario_id:** 1 (Otimista), 2 (Pessimista) ou null quando o indicador não tiver essa cenários.
+ - **year:** ano a ser filtrado (***opcional:*** se não for fornecido serão retornados todos os dados de todos os anos).
  
 #### Exemplo de chamada:
 
