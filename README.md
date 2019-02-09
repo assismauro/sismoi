@@ -179,7 +179,7 @@ Retorna os dados associados aos polígonos.
  - **clipping:** recorte do mapa. Alternativas: "semiárido", "SE", "PE", "MG", "CE", "BA", "PI", "AL", "PB", "RN", "MA"
  - **resolution:** resolução do mapa. Alternativas: "microrregiao", "mesorregiao", "municipio", "estado"
  - **indicator_id:** id do indicador a ser exibido
- - **scenario_id:** cenário a ser selecionado, "O", "P" ou null quando o indicador não tiver.
+ - **scenario_id:** cenário a ser selecionado, 1 (Otimista), 2 (Pessimista) ou null quando o indicador não tiver.
  - **year:** ano a ser filtrado
 
 #### Exemplo de chamada:
@@ -239,7 +239,7 @@ Retorna a geometria e os dados correspondentes num json cujo formato pode ser pa
  - **clipping:** recorte do mapa. Alternativas: "semiárido", "SE", "PE", "MG", "CE", "BA", "PI", "AL", "PB", "RN", "MA"
  - **resolution:** resolução do mapa. Alternativas: "microrregiao", "mesorregiao", "municipio", "estado"
  - **indicator_id:** id do indicador a ser exibido
- - **scenario_id:** cenário a ser selecionado, "O", "P" ou null quando o indicador não tiver.
+ - **scenario_id:** cenário a ser selecionado, 1 (Otimista), 2 (Pessimista) ou null quando o indicador não tiver.
  - **year:** ano a ser filtrado
  
 #### Exemplo de chamada:
@@ -290,4 +290,76 @@ json contendo registros pesquisados.
 				]
 			}
 		},
+```
+
+### e) getTotal
+
+Retorna informações hierárquicas sobre os indicadores que podem ser usadas em diferentes locais do SISMOI.
+
+#### Parâmetros:
+
+ - **clipping:** recorte do mapa. Alternativas: "semiárido", "SE", "PE", "MG", "CE", "BA", "PI", "AL", "PB", "RN", "MA"
+ - **resolution:** resolução do mapa. Alternativas: "microrregiao", "mesorregiao", "municipio", "estado"
+ - **indicator_id:** id do indicador a ser exibido
+ - **scenario_id:** 1 (Otimista), 2 (Pessimista) ou null quando o indicador não tiver.
+ - **year:** ano a ser filtrado (***opcional:*** se não for fornecido serão retornados todos os anos).
+ 
+#### Exemplo de chamada:
+
+```
+curl -i http://127.0.0.1:5000/sismoi/getTotal/clipping=RN,indicator_id=19,resolution=municipio,scenario_id=1
+```
+
+#### Retorno: 
+
+json contendo registros pesquisados. 
+
+#### Descição dos campos do json:
+
+O json é hierárquico, ou seja, existe uma estrutura de árvore entre os registros:
+
+ - **<ano>** o primeiro nível é o ano (ex: 2015, 2030, 2050).
+   - **<classe de valor>** nome da classe de valor (verylow,low,mid,high,veryhigh).
+     - **count:** número de registros nessa classe.
+     - **valuecolor:** cor da classe de valor.
+     - **data:** conjunto de dados daquele ano e naquela classe de valor.
+	- **id:** id da resolução (município, microrregião, mesorregião).
+	- **name:** nome do objeto na resolução.
+	- **value:** valor do indicador na resolução.
+ 
+ #### Exemplo de retorno (Parte da hierarquia):
+
+```
+{
+	"2010": {
+		"verylow": {
+			"data": [],
+			"count": 0,
+			"valuecolor": "#1a9641"
+		},
+		"count": 0,
+		"low": {
+			"data": [],
+			"count": 0,
+			"valuecolor": "#a6d96a"
+		},
+		"mid": {
+			"data": [],
+			"count": 0,
+			"valuecolor": "#ffffbf"
+		},
+		"high": {
+			"data": [{
+					"id:": 60,
+					"name": "\u00c3\u0081Gua Nova",
+					"value:": 0.751
+				}, {
+					"id:": 109,
+					"name": "Alexandria",
+					"value:": 0.751
+				}, {
+					"id:": 124,
+					"name": "Almino Afonso",
+					"value:": 0.751
+				}, ...
 ```
