@@ -322,10 +322,9 @@ O json é hierárquico, ou seja, existe uma estrutura de árvore entre os regist
    - **<classe de valor>** nome da classe de valor (verylow,low,mid,high,veryhigh).
      - **count:** número de registros nessa classe.
      - **valuecolor:** cor da classe de valor.
-     - **data:** conjunto de dados daquele ano e naquela classe de valor.
-	- **id:** id da resolução (município, microrregião, mesorregião).
-	- **name:** nome do objeto na resolução.
-	- **value:** valor do indicador na resolução.
+     - **data:** conjunto de dados daquele ano e naquela classe de valor: **id** resolução (município, microrregião, mesorregião ou estado), **name** (nome do objeto na resolução), **value** (valor do indicador na resolução).
+ 
+ Sobre a ordenação dos dados, ver tópico **Sobre a ordenação dos valores** abaixo.
  
  #### Exemplo de retorno (Parte da hierarquia):
 
@@ -363,3 +362,14 @@ O json é hierárquico, ou seja, existe uma estrutura de árvore entre os regist
 					"value:": 0.751
 				}, ...
 ```
+### Sobre a ordenação dos valores:
+
+Existem indicadores no SISMOI em que o valor mais alt oé **bom** e outros em que o valor mais alto é **ruim**. Exemplo:
+
+O indicador **Monitoramento e Prioridade Federal** pertence ao primeiro grupo. Isso significa que um valor como 0,87 para esse indicador é **bom** ou seja, quando for ser exibido na forma de uma cor, está será verde.
+
+Já o indicador **Exposição Biofísica** tem um comportamento oposto, ou seja, quanto maior o valor, pior o indicador. Nesse caso o mesmo valor deve ser exibido na cor vermelha.
+
+Os serviços providos pelo **sismoyWS.py** levam isso em consideração, ou seja: quando é indicada uma cor pra um determinado valor, as cores sindicadas pela propriedade **valuecolor** respeitam essa regra.
+
+Da mesma forma, quando necessário, caso do **getTotal**, os valores são ordenados em ordem decrescente de acordo com esse parâmetro, ou seja: os **melhores valores** estarão sempre em primeiro lugar. 
