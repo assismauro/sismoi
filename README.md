@@ -69,6 +69,7 @@ e por código (id) dentro do nível. Os níveis de valores menores são os mais 
     "equation": null,
     "years": "2015",
     "level": 1,
+    "pessimist": null,
     "indicator_id_master": null
   },
   {
@@ -93,6 +94,7 @@ e por código (id) dentro do nível. Os níveis de valores menores são os mais 
     "equation": null,
     "years": "2015, 2030, 2050",
     "level": 2,
+    "pessimist": 1,
     "indicator_id_master": 1
   }
 ]
