@@ -1,7 +1,28 @@
-## SISMOI
-### Documentação de uso dos webservices do SISMOI
+# SISMOI - Documentação
 
-Abaixo a descrição dos webservices do SISMOI, seus parâmetros e retornos.
+## 1) Parâmetros da linha de comando
+
+**-d** Ativa modo debub: nesse caso a URL acessada será replicada na tela quando houver requisição de um webservice.
+
+**-host** Host do servidor web. Default: 127.0.0.1
+
+**-p** Porta do serviço. Default: 5000
+
+**-c** Tipo de cache: 0 - sem cache, 1 - cache descompactado, 2 - cache compactado, Default: 1
+
+## 2) Ordenação dos valores:
+
+Existem indicadores no SISMOI em que o valor mais alto é **bom** e outros em que o valor mais alto é **ruim**. Exemplo:
+
+O indicador **Monitoramento e Prioridade Federal** pertence ao primeiro grupo. Isso significa que um valor como 0,87 para esse indicador é **bom** ou seja, quando for ser exibido na forma de uma cor, esta será verde.
+
+Já o indicador **Exposição Biofísica** tem um comportamento oposto, ou seja, quanto maior o valor, pior o indicador. Nesse caso o mesmo valor deve ser exibido na cor vermelha.
+
+Os serviços providos pelo **sismoyWS.py** levam isso em consideração, ou seja: quando é indicada uma cor pra um determinado valor, as cores sindicadas pela propriedade **valuecolor** respeitam essa regra.
+
+Da mesma forma, quando necessário, caso do **getTotal**, os valores são ordenados em ordem decrescente de acordo com esse parâmetro, ou seja: os **melhores valores** estarão sempre em primeiro lugar. 
+
+## 3) Descrição dos webservices implementados
 
 ### a) getHierarchy
 
@@ -362,14 +383,4 @@ O json é hierárquico, ou seja, existe uma estrutura de árvore entre os regist
 					"value:": 0.751
 				}, ...
 ```
-### Sobre a ordenação dos valores:
 
-Existem indicadores no SISMOI em que o valor mais alt oé **bom** e outros em que o valor mais alto é **ruim**. Exemplo:
-
-O indicador **Monitoramento e Prioridade Federal** pertence ao primeiro grupo. Isso significa que um valor como 0,87 para esse indicador é **bom** ou seja, quando for ser exibido na forma de uma cor, está será verde.
-
-Já o indicador **Exposição Biofísica** tem um comportamento oposto, ou seja, quanto maior o valor, pior o indicador. Nesse caso o mesmo valor deve ser exibido na cor vermelha.
-
-Os serviços providos pelo **sismoyWS.py** levam isso em consideração, ou seja: quando é indicada uma cor pra um determinado valor, as cores sindicadas pela propriedade **valuecolor** respeitam essa regra.
-
-Da mesma forma, quando necessário, caso do **getTotal**, os valores são ordenados em ordem decrescente de acordo com esse parâmetro, ou seja: os **melhores valores** estarão sempre em primeiro lugar. 
