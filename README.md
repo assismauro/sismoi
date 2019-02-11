@@ -53,6 +53,7 @@ e por código (id) dentro do nível. Os níveis de valores menores são os mais 
  - **simple_description:** descrição simples do indicador.
  - **title:** título do indicador.
  - **years:** lista de anos em que o indicador ocorre, separados por vírgula.
+ - **pessimist:** se igual a 0, o indicador é "bom" quando o valor é alto, se igual a 1, quanto maior o valor do indicador pior é.
 
 #### Exemplo de retorno (três registros):
 
