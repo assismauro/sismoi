@@ -2,7 +2,7 @@
 
 ## 1) Parâmetros da linha de comando
 
-**-d** Ativa modo debub: nesse caso a URL acessada será replicada na tela quando houver requisição de um webservice.
+**-d** Ativa modo debug: nesse caso a URL acessada será replicada na tela quando houver requisição de um webservice.
 
 **-host** Host do servidor web. Default: 127.0.0.1
 
@@ -183,7 +183,7 @@ json contendo os dados. Há informações de projeção e uma propriedade chamad
 			[-40.324513, -2.860845], 
 			[-40.36254, -2.865738], 
 			[-40.372259, -2.810277], 
-			[-40.331121, -2.805455]]]
+			[-40.331121, -2.805455]
 		]
             ]
           ]
