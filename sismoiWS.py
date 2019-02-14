@@ -54,7 +54,7 @@ def getValue(sql):
 
 def findElement(data,keyfield, feature):
     for rec in data:
-        if rec[keyfield] == feature['properties'][keyfield]:
+        if rec[keyfield] == int(feature['properties'][keyfield]):
             return rec
     raise Exception('Element not found in findElement. keyfield: {0} Feature: \n {1}'.format(keyfield,feature))
 
@@ -106,7 +106,7 @@ def validateClippingResolution(sparams):
     errorMsg=''
     params = dict(token.split('=') for token in sparams.split(','))
     if not(params['resolution'] in resolutions):
-        errorMsg='Resolução errada: {0}.'.format(params['resolution'])
+        errorMsg='SISMOI Err: Resolução errada: {0}.'.format(params['resolution'])
     if params['clipping'] not in clippings:
         errorMsg="É necessário especificar clipping como 'semiarido' ou uma UF válida."
     return errorMsg,params
@@ -116,20 +116,22 @@ def validateParams(sparams):
     if errorMsg != '':
         return errorMsg, params
     if not 'indicator_id' in params:
-        errorMsg = "É obrigatório especificar o indicador (indicator_id)."
+        errorMsg = "SISMOI Err: É obrigatório especificar o indicador (indicator_id)."
     elif not 'scenario_id' in params:
-        errorMsg = "É obrigatório especificar o cenário (scenario_id)."
+        errorMsg = "SISMOI Err: É obrigatório especificar o cenário (scenario_id)."
+    elif not params['scenario_id'] in ['1','2','null']:
+        errorMsg='Valor de scenario_id inválido, deve ser 1, 2 ou null.'
     elif ('year' in params):
         if not params['year'] in years[int(params['indicator_id'])].split(','):
-            errorMsg = "Ano {0} não existe para o indicador {1}. Anos válidos: {2}".format(params['year'],
+            errorMsg='SISMOI Err: Ano {0} não existe para o indicador {1}. Anos válidos: {2}'.format(params['year'],
                                                                                        params['indicator_id'],
                                                                                        years[int(params['indicator_id'])])
         elif (params['scenario_id'] == 'null') and (int(params['year']) > currentYear):
-            errorMsg = "É necessário especificar o cenário para ano maior que {0}.".format(currentYear)
+            errorMsg='SISMOI Err: É necessário especificar o cenário para ano maior que {0}.'.format(currentYear)
         elif (params['scenario_id'] != 'null') and (int(params['year']) <= currentYear):
-            errorMsg = "Cenários não podem ser especificados para anos menores ou iguais a {0}.".format(currentYear)
+            errorMsg='SISMOI Err: Cenários não podem ser especificados para anos menores ou iguais a {0}.'.format(currentYear)
     elif params['scenario_id'] == 'null':
-        errorMsg='Se o ano não foi especificado, o cenário não pode ser nulo.'
+        errorMsg='SISMOI Err: Se o ano não foi especificado, o cenário não pode ser nulo.'
     return errorMsg,params
 
 def addFeatureColor(data):
@@ -147,10 +149,10 @@ def toGroupedDict(data,pessimist):
                                                       'valuecolor': featureColor(colorFake,pessimist)},'count': 0})
         if 'id' in data[i]:
             ret[data[i]['year']][data[i]['class']]['data'].append({'id':data[i]['id'],
-                'name':data[i]['name'], 'value:':data[i]['value']})
+                'name':data[i]['name'], 'value':data[i]['value']})
         else:
             ret[data[i]['year']][data[i]['class']]['data'].append({'state':data[i]['state'],
-                'value:':data[i]['value']})
+                'value':data[i]['value']})
         ret[data[i]['year']][data[i]['class']]['count']+=1
         ret[data[i]['year']]['count']+=1
     return ret
@@ -190,7 +192,7 @@ def getIndicatorByMicroregion(params):
                              order by                   m.name, v.year, v.scenario_id
                           '''.format(params['indicator_id'],
                                      ' = ' +params['scenario_id'] if params['scenario_id'] != 'null' else 'is null',
-                                     "and state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
+                                     "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
                                      params['year'])
                           )
     return addFeatureColor(data)
@@ -212,7 +214,7 @@ def getIndicatorByMesoregion(params):
                             order by                   m.name, v.year, v.scenario_id
                           '''.format(params['indicator_id'],
                                      ' = ' +params['scenario_id'] if params['scenario_id'] != 'null' else 'is null',
-                                     "and state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
+                                     "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
                                      params['year'])
                           )
     return addFeatureColor(data)
@@ -234,7 +236,7 @@ def getIndicatorByState(params):
                              order by c.state, v.indicator_id, v.scenario_id,year
                           '''.format(params['indicator_id'],
                                      ' = ' +params['scenario_id'] if params['scenario_id'] != 'null' else 'is null',
-                                     "and state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
+                                     "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
                                      params['year'])
                           )
     return addFeatureColor(data)
@@ -261,10 +263,10 @@ def getTotalByState(params):
                                 {1}
                                 {2} 
                                 {3}                
-                             group by state, year, i.pessimist
-                                order by year {4}, state
+                             group by c.state, year, i.pessimist
+                                order by year {4}, c.state
                           '''.format(params['indicator_id'],
-                             (' and (scenario_id = {0})'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
+                             (' and (scenario_id = {0} or scenario_id is null)'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
                               "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
                               'and v.year = {0}'.format(params['year']) if 'year' in params else '',
                               ('desc' if pessimist == 0 else '')
@@ -297,7 +299,7 @@ def getTotalByMesoregion(params):
                              group by year, mesoregion_id, m.name
                                 order by year, value {4}, name
                           '''.format(params['indicator_id'],
-                             (' and (scenario_id = {0})'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
+                             (' and (scenario_id = {0} or scenario_id is null)'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
                               "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
                               'and v.year = {0}'.format(params['year']) if 'year' in params else '',
                               ('desc' if pessimist == 0 else '')
@@ -330,7 +332,7 @@ def getTotalByMicroregion(params):
                              group by year, c.microregion_id, m.name
                                 order by year, value {4}, name
                           '''.format(params['indicator_id'],
-                             (' and (scenario_id = {0})'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
+                             (' and (scenario_id = {0} or scenario_id is null)'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
                               "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
                               'and v.year = {0}'.format(params['year']) if 'year' in params else '',
                               ('desc' if pessimist == 0 else '')
@@ -360,7 +362,7 @@ def getTotalByCounty(params):
                                 {3}
                                 order by year, value {4}, name
                           '''.format(params['indicator_id'],
-                             (' and (scenario_id = {0})'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
+                             (' and (scenario_id = {0} or scenario_id is null)'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
                               "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
                               'and v.year = {0}'.format(params['year']) if 'year' in params else '',
                               ('desc' if pessimist == 0 else '')
@@ -384,8 +386,10 @@ def getHierarchy():
     if inCache('getHierarchy@'):
         return fromCache('getHierarchy@')
     try:
-        data=getDictResultset("""select a.id,a.name,a.title,a.shortname,a.simple_description,a.complete_description,
-                                        a.equation,a.level,a.pessimist,b.indicator_id_master,
+        data=getDictResultset("""select a.id,a.name,a.title,a.shortname,
+                                        a.simple_description,a.complete_description,
+                                        a.equation,a.level,a.pessimist,
+                                        string_agg(distinct b.indicator_id_master::character varying,',') as indicator_id_master, 
                                         string_agg(year::character varying,',') as years 
                                         from indicator a
                                  left join indicator_indicator b
@@ -394,7 +398,7 @@ def getHierarchy():
                                         on a.id = v.indicator_id
                                      where level = 1 or indicator_id_master is not null
                                   group by a.id,a.name,a.title,a.shortname,a.simple_description,a.complete_description,
-                                           a.equation,a.level,a.pessimist,b.indicator_id_master
+                                           a.equation,a.level,a.pessimist
                                   order by level,id
                               """)
         ret = json.dumps(data)
@@ -409,27 +413,23 @@ def getGeometry(sparams):
         return fromCache('getGeometry@'+sparams)
     errorMsg, params = validateClippingResolution(sparams)
     if (errorMsg != ''):
-        raise Exception('getGeometry: ' + errorMsg + '\nParams: '+sparams)
-    # force reasolution == 'municipio' of there´s state clipping.
-    realresolution = (params['resolution'] if params['clipping'] == 'semiarido' else 'municipio')
-    if not realresolution in mapTemplates:
-        cur.execute("SELECT geojson FROM geojson WHERE name = '{0}'".format(realresolution))
-        mapTemplates[realresolution]=cur.fetchone()[0]
-    if realresolution == 'municipio':
-        map=json.loads(mapTemplates[realresolution])
+        raise Exception('SISMOI Err: getGeometry: ' + errorMsg + '\nParams: '+sparams)
+    if not params['resolution'] in mapTemplates:
+        cur.execute("SELECT geojson FROM geojson WHERE name = '{0}'".format(params['resolution']))
+        mapTemplates[params['resolution']]=cur.fetchone()[0]
+        map=json.loads(mapTemplates[params['resolution']])
         try:
             i=0
             while i < len(map['features']):
-                if (params['clipping'] != 'semiarido') and (params['clipping'] != map['features'][i]['properties']['uf']):
+                if params['clipping'] != map['features'][i]['properties']['state']:
                     del map['features'][i]
                 else:
-                    del map['features'][i]['properties']['uf']
                     i+=1
         except Exception as e:
             print(e)
         ret=json.dumps(map)
     else:
-        ret=mapTemplates[realresolution]
+        ret=mapTemplates[params['resolution']]
     toCache('getGeometry@'+sparams,ret)
     return ret
 
@@ -449,6 +449,8 @@ def getMapData(sparams):
         data = getIndicatorByMesoregion(params)
     elif params['resolution'] == 'estado':
         data = getIndicatorByState(params)
+    if len(data) == 0:
+        raise Exception('SISMOI Err: getMapData: Não existem dados para esses parâmetros: {0}'.format(sparams))
     ret=json.dumps(data)
     toCache('getMapData@'+sparams,ret)
     return ret
@@ -488,7 +490,7 @@ def getTotal(sparams):
     elif params['resolution'] == 'estado':
         data = getTotalByState(params)
     else:
-        raise Exception('Parâmetro resolution inválido: {0}',params['resolution'])
+        raise Exception('SISMOI Err: Parâmetro resolution inválido: {0}',params['resolution'])
     ret=json.dumps(data)
     toCache('getTotal@'+sparams,ret)
     return ret
