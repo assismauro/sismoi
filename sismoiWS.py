@@ -6,6 +6,7 @@ import json
 import numpy as np
 import datetime
 import zlib
+import random
 
 conn,cur = None,None
 
@@ -16,8 +17,6 @@ classes = ['verylow','low','mid','high','veryhigh']
 clippings = ['semiarido']
 
 colorMap = ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641']
-
-mapTemplates = {}
 
 cache = {}
 cacheType = -1
@@ -52,11 +51,19 @@ def getValue(sql):
     else:
         return None
 
+def getRows(sql):
+    cur.execute(sql)
+    rows = cur.fetchall()
+    if rows != None:
+        return rows
+    else:
+        return None
+
 def findElement(data,keyfield, feature):
     for rec in data:
         if rec[keyfield] == int(feature['properties'][keyfield]):
             return rec
-    raise Exception('Element not found in findElement. keyfield: {0} Feature: \n {1}'.format(keyfield,feature))
+    raise Exception('Element not found in findElement. keyfield: {0} Feature value: {1}'.format(keyfield,feature['properties'][keyfield]))
 
 def getDictResultset(sql):
     dictcur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -64,6 +71,8 @@ def getDictResultset(sql):
     resultset =dictcur.fetchall()
     dictResult = []
     for row in resultset:
+        if row.__contains__('value'):
+            row['value']=round(row['value'],2)
         dictResult.append(dict(row))
     return dictResult
 
@@ -95,7 +104,7 @@ def inCache(label):
     return label in cache
 
 def featureColor(value, pessimist):
-    value = value if (not pessimist) else 1 - value
+    value = value if (not pessimist) else (1 - value + 0.01)
     return colorMap[0] if (value >= 0.0 and value <= 0.2) else\
            colorMap[1] if (value >  0.2 and value <= 0.4) else\
            colorMap[2] if (value >  0.4 and value <= 0.6) else\
@@ -106,7 +115,7 @@ def validateClippingResolution(sparams):
     errorMsg=''
     params = dict(token.split('=') for token in sparams.split(','))
     if not(params['resolution'] in resolutions):
-        errorMsg='SISMOI Err: Resolução errada: {0}.'.format(params['resolution'])
+        errorMsg='sismoiErr: Resolução errada: {0}.'.format(params['resolution'])
     if params['clipping'] not in clippings:
         errorMsg="É necessário especificar clipping como 'semiarido' ou uma UF válida."
     return errorMsg,params
@@ -116,22 +125,24 @@ def validateParams(sparams):
     if errorMsg != '':
         return errorMsg, params
     if not 'indicator_id' in params:
-        errorMsg = "SISMOI Err: É obrigatório especificar o indicador (indicator_id)."
+        errorMsg = "sismoiErr: É obrigatório especificar o indicador (indicator_id)."
+    if int(params['indicator_id']) == 1:
+        errorMsg = "sismoiErr: indicator_id deve ser maior que 1."
     elif not 'scenario_id' in params:
-        errorMsg = "SISMOI Err: É obrigatório especificar o cenário (scenario_id)."
+        errorMsg = "sismoiErr: É obrigatório especificar o cenário (scenario_id)."
     elif not params['scenario_id'] in ['1','2','null']:
-        errorMsg='Valor de scenario_id inválido, deve ser 1, 2 ou null.'
+        errorMsg='sismoiErr: Valor de scenario_id inválido, deve ser 1, 2 ou null.'
     elif ('year' in params):
         if not params['year'] in years[int(params['indicator_id'])].split(','):
-            errorMsg='SISMOI Err: Ano {0} não existe para o indicador {1}. Anos válidos: {2}'.format(params['year'],
+            errorMsg='sismoiErr: Ano {0} não existe para o indicador {1}. Anos válidos: {2}'.format(params['year'],
                                                                                        params['indicator_id'],
                                                                                        years[int(params['indicator_id'])])
         elif (params['scenario_id'] == 'null') and (int(params['year']) > currentYear):
-            errorMsg='SISMOI Err: É necessário especificar o cenário para ano maior que {0}.'.format(currentYear)
+            errorMsg='sismoiErr: É necessário especificar o cenário para ano maior que {0}.'.format(currentYear)
         elif (params['scenario_id'] != 'null') and (int(params['year']) <= currentYear):
-            errorMsg='SISMOI Err: Cenários não podem ser especificados para anos menores ou iguais a {0}.'.format(currentYear)
+            errorMsg='sismoiErr: Cenários não podem ser especificados para anos menores ou iguais a {0}.'.format(currentYear)
     elif params['scenario_id'] == 'null':
-        errorMsg='SISMOI Err: Se o ano não foi especificado, o cenário não pode ser nulo.'
+        errorMsg='sismoiErr: Se o ano não foi especificado, o cenário não pode ser nulo.'
     return errorMsg,params
 
 def addFeatureColor(data):
@@ -409,15 +420,15 @@ def getHierarchy():
 
 @app.route('/sismoi/getGeometry/<sparams>', methods=['GET'])
 def getGeometry(sparams):
-    if inCache('getGeometry@'+sparams):
-        return fromCache('getGeometry@'+sparams)
     errorMsg, params = validateClippingResolution(sparams)
     if (errorMsg != ''):
-        raise Exception('SISMOI Err: getGeometry: ' + errorMsg + '\nParams: '+sparams)
-    if not params['resolution'] in mapTemplates:
-        cur.execute("SELECT geojson FROM geojson WHERE name = '{0}'".format(params['resolution']))
-        mapTemplates[params['resolution']]=cur.fetchone()[0]
-        map=json.loads(mapTemplates[params['resolution']])
+        raise Exception('sismoiErr: getGeometry: ' + errorMsg + '\nParams: '+sparams)
+    # special cache for maps
+    cacheName='getGeometry@resolution={0},clipping={1}'.format(params['resolution'],params['clipping'])
+    if inCache(cacheName):
+        return fromCache(cacheName)
+    map=json.loads(getValue("select geojson from geojson where name = '{0}'".format(params['resolution'])))
+    if params['clipping'] != 'semiarido':
         try:
             i=0
             while i < len(map['features']):
@@ -427,10 +438,8 @@ def getGeometry(sparams):
                     i+=1
         except Exception as e:
             print(e)
-        ret=json.dumps(map)
-    else:
-        ret=mapTemplates[params['resolution']]
-    toCache('getGeometry@'+sparams,ret)
+    ret=json.dumps(map)
+    toCache(cacheName,ret)
     return ret
 
 @app.route('/sismoi/getMapData/<sparams>', methods=['GET'])
@@ -450,7 +459,7 @@ def getMapData(sparams):
     elif params['resolution'] == 'estado':
         data = getIndicatorByState(params)
     if len(data) == 0:
-        raise Exception('SISMOI Err: getMapData: Não existem dados para esses parâmetros: {0}'.format(sparams))
+        raise Exception('sismoiErr: getMapData: Não existem dados para esses parâmetros: {0}'.format(sparams))
     ret=json.dumps(data)
     toCache('getMapData@'+sparams,ret)
     return ret
@@ -480,7 +489,7 @@ def getTotal(sparams):
         return fromCache('getTotal@'+sparams)
     errorMsg, params = validateParams(sparams)
     if (errorMsg != ''):
-        raise Exception('getTotal: ' + errorMsg)
+        return 'sismoiErr: getTotal: ' + errorMsg
     if params['resolution'] == 'municipio':
         data = getTotalByCounty(params)
     elif params['resolution'] == 'microrregiao':
@@ -490,10 +499,76 @@ def getTotal(sparams):
     elif params['resolution'] == 'estado':
         data = getTotalByState(params)
     else:
-        raise Exception('SISMOI Err: Parâmetro resolution inválido: {0}',params['resolution'])
+        raise Exception('sismoiErr: Parâmetro resolution inválido: {0}',params['resolution'])
     ret=json.dumps(data)
     toCache('getTotal@'+sparams,ret)
     return ret
+
+def addInfoData(sql,d,label):
+    rows=getRows(sql)
+    values=np.random.random(len(rows))
+    values/=values.sum()
+    for i in range(len(rows)):
+        value=round(values[i],2)
+        d[label].append({'id':rows[i][0],'name':rows[i][1],'value':value,'fillcolor':featureColor(values[i],rows[i][2])})
+    return d
+
+def getInfoCounty(params):
+    if getValue('select count(*) from county where id = {0}'.format(params['resolution_id'])) == 0:
+        raise Exception('sismoiErr: getInfo: county_id {0} não existe.'.format(params['resolution_id']))
+    pessimist = getValue('select pessimist from indicator where id = {0}'.format(params['indicator_id']))
+    indicators = getDictResultset('select id,title,level,pessimist from indicator order by id')
+    indicatorLevel = int(indicators[int(params['indicator_id'])]['level'])
+    if indicatorLevel == 6:
+        raise Exception('sismoiErr: getInfo: o nível ', params['resolution'])
+    data={'nextlevel':[],'alllevels':[]}
+    k = 2
+    for i in range(indicatorLevel,7): ## 7 maximum indicator level + 1
+        indexes=random.sample(range(len(indicators)),k)
+        values = np.random.random(k)
+        values /= values.sum()
+        values=[round(v,2) for v in values]
+        for j in range(k):
+            if i == indicatorLevel:
+                data['nextlevel'].append({'id': indicators[indexes[j]]['id'], 'title': indicators[indexes[j]]['title'],
+                                          'value': values[j],
+                                          'featurecolor': featureColor(values[j], indicators[indexes[j]]['pessimist']),
+                                          'level': i})
+            data['alllevels'].append({'id': indicators[indexes[j]]['id'], 'title': indicators[indexes[j]]['title'],
+                                      'value': values[j],
+                                      'featurecolor': featureColor(values[j], indicators[indexes[j]]['pessimist']),
+                                      'level' : i})
+        k+=1
+    data['nextlevel'] = sorted(data['nextlevel'], key=lambda k: k['value'], reverse=pessimist == 1)
+    data['alllevels'] = sorted(data['alllevels'], key=lambda k: k['value'], reverse=pessimist == 1)
+    return data
+
+'''
+    data={'nextlevel':[],'alllevels':[]}
+    sql=''
+    i=0
+    for i in range(5-idLevel):
+        sql=(sql+'inner join indicator_indicator {0}\non {1}.indicator_id_detail = {0}.indicator_id_master\n').format(chr(i+98),chr(i+97))
+    sql+='inner join indicator y on {0}.indicator_id_detail = y.id\ninner join indicator z on b.indicator_id_detail = z.id\n'.format(chr(i+98))
+    sql=(select {0}.indicator_id_detail alllevels,y.title as namealllevels,y.pessimist as pessimistalllevels,
+            b.indicator_id_detail nextlevel,z.title as namenextlevel,z.pessimist as pessimistnextlevel from indicator_indicator a \n
+         +sql).format(chr(i+98))+'where a.indicator_id_master = {0}'.format(params['indicator_id'])
+    data=addInfoData(sql,data,'alllevels')
+    data=addInfoData('select distinct nextlevel,namenextlevel as name,pessimistnextlevel as pessimist from\n('+sql+') a',data,'nextlevel')
+'''
+
+# clipping=semiarido,resolution=municipio,indicator_id=2,scenario_id=1,year=2030
+@app.route('/sismoi/getInfo/<sparams>', methods=['GET'])
+def getInfo(sparams):
+    if inCache('getInfo@'+sparams):
+        return fromCache('getInfo@'+sparams)
+    errorMsg,params=validateClippingResolution(sparams)
+    if errorMsg == '' and (not 'indicator_id' in params):
+        errorMsg = "sismoiErr: É obrigatório especificar o indicador (indicator_id)."
+    if errorMsg != '':
+        return errorMsg, params
+    data=getInfoCounty(params)
+    return json.dumps(data)
 
 if __name__ == "__main__":
     try:
