@@ -1,4 +1,4 @@
-# SISMOI - Documentação
+# Webservices do SISMOI - Documentação
 
 ## 1) Parâmetros da linha de comando
 
@@ -349,7 +349,7 @@ O json é hierárquico, ou seja, existe uma estrutura de árvore entre os regist
      - **valuecolor:** cor da classe de valor.
      - **data:** conjunto de dados daquele ano e naquela classe de valor: **id** resolução (município, microrregião, mesorregião ou estado), **name** (nome do objeto na resolução), **value** (valor do indicador na resolução).
  
- Sobre a ordenação dos dados, ver tópico **Sobre a ordenação dos valores** abaixo.
+ Sobre a ordenação dos dados, ver tópico **Sobre a ordenação dos valores** acima.
  
  #### Exemplo de retorno (Parte da hierarquia):
 
@@ -388,3 +388,86 @@ O json é hierárquico, ou seja, existe uma estrutura de árvore entre os regist
 				}, ...
 ```
 
+### e) getInfo (funcionando com dados aleatórios, ainda não são dados reais!!!)
+
+Os valores dos indicadores com nível menor que 6 são compostos por indicadores de níveis abaixo.
+Esse serviço retorna a composição dos valores dos indicadores com base nos níveis seguintes
+
+#### Parâmetros:
+
+ - **clipping:** recorte do mapa. Alternativas: "semiárido", "SE", "PE", "MG", "CE", "BA", "PI", "AL", "PB", "RN", "MA"
+ - **resolution:** resolução do mapa. Alternativas: "microrregiao", "mesorregiao", "municipio", "estado"
+ - **indicator_id:** id do indicador a ser exibido
+ - **resolution_id:** id do objeto a ser exibido, conforme a resolução (**county_id** para a resolução **município**, **microregion_id** para a resolução **microrregiao**, **macroregion_id** para a resolução **macrorregiao**  e **state** para a resolução **estado**).  
+ 
+#### Exemplo de chamada:
+
+```
+curl -i http://127.0.0.1:5000/sismoi/getInfo/clipping=CE,resolution=mesorregiao,indicator_id=1,resolution_id=10
+```
+
+#### Retorno: 
+
+json contendo registros pesquisados. 
+
+#### Descição dos campos do json:
+
+O json é hierárquico, ou seja, existe uma estrutura de árvore entre os registros:
+
+ - **nextlevel** ou **alllevels** indica se a estrutura contém somente o próximo nível de indicador ou se contém todos eles.
+   - **id** é o id do indicador.
+   - **title** título do indicador.
+   - **value** fração do indicador que compõe o indicador pesquisado. A soma em cada nível é igual a 1.
+   - **level** nível do indicador.
+   
+ Sobre a ordenação dos dados, ver tópico **Sobre a ordenação dos valores** acima.
+ 
+ #### Exemplo de retorno (Parte da hierarquia):
+ 
+ ```
+ {
+	"nextlevel": [{
+		"id": 65,
+		"title": "M\u00e1xima precipita\u00e7\u00e3o anual em 5 dias consecutivos para a Chuva",
+		"value": 0.95,
+		"featurecolor": "#d7191c",
+		"level": 2
+	}, {
+		"id": 22,
+		"title": "\u00cdndice de Vulnerabilidade para a Chuva",
+		"value": 0.05,
+		"featurecolor": "#1a9641",
+		"level": 2
+	}],
+	"alllevels": [{
+		"id": 65,
+		"title": "M\u00e1xima precipita\u00e7\u00e3o anual em 5 dias consecutivos para a Chuva",
+		"value": 0.95,
+		"featurecolor": "#d7191c",
+		"level": 2
+	}, {
+		"id": 7,
+		"title": "\u00cdndice de Sensibilidade para a Seca",
+		"value": 0.44,
+		"featurecolor": "#ffffbf",
+		"level": 3
+	}, {
+		"id": 59,
+		"title": "\u00c1reas Antropizadas ou Imperme\u00e1veis",
+		"value": 0.33,
+		"featurecolor": "#a6d96a",
+		"level": 3
+	}, {
+		"id": 14,
+		"title": "Gest\u00e3o dos Recursos H\u00eddricos para a Seca",
+		"value": 0.32,
+		"featurecolor": "#fdae61",
+		"level": 4
+	}, {
+		"id": 5,
+		"title": "\u00cdndice de Exposi\u00e7\u00e3o para a Seca",
+		"value": 0.31,
+		"featurecolor": "#a6d96a",
+		"level": 5
+	}, {...
+```
