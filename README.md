@@ -417,74 +417,63 @@ O json é hierárquico, ou seja, existe uma estrutura de árvore entre os regist
  - **nextlevel** ou **lastlevel** indica se a estrutura contém somente o próximo nível de indicador ou se contém todos eles.
    - **id** é o id do indicador.
    - **title** título do indicador.
-   - **value** fração do indicador que compõe o indicador pesquisado. A soma em cada nível é igual a 1.
+   - **value** fração do indicador que compõe o indicador pesquisado. A soma em nextlevel é igual a 1.
    
  Sobre a ordenação dos dados, ver tópico **Sobre a ordenação dos valores** acima.
  
- #### Exemplo de retorno para o indicador 26, nível 5:
+ #### Exemplo de retorno para o indicador 26, nível 4:
  
- ```{
+ ```json
+ {
 	"nextlevel": [{
 		"id": 31,
 		"title": "Planos ou A\u00e7\u00f5es Emergenciais e/ou Estruturais para a Chuva",
-		"complete_description": "Conjunto de planos, a\u00e7\u00f5es e prioridades governamentais emerg\u00eancias existentes que podem diminuir o n\u00edvel de impacto presente e futuro de mudan\u00e7as clim\u00e1ticas considerando uma situa\u00e7\u00e3o de excesso de chuva. Informa\u00e7\u00e3o resultante da composi\u00e7\u00e3o de indicadores de alternativas ao abastecimento de \u00e1gua, planos de conting\u00eancia para desastres ambientais, ades\u00e3o ao programa cidades resilientes e monitoramento e prioridade federal contra desastres naturais.<br><br>Fonte:<br>Sistema Brasileiro de Monitoramento e Observa\u00e7\u00e3o de Impactos da Mudan\u00e7a Clim\u00e1tica - SISMOI",
-		"value": 0.45
+		"value": 0.24
 	}, {
 		"id": 32,
 		"title": "Gest\u00e3o dos Recursos H\u00eddricos para a Chuva",
-		"complete_description": "Capacidade de resposta (positiva) da popula\u00e7\u00e3o a uma situa\u00e7\u00e3o de excesso de chuva considerando o n\u00edvel de gest\u00e3o e de pol\u00edticas p\u00fablicas relacionadas \u00e0 manuten\u00e7\u00e3o dos recursos h\u00eddricos e qualidade de saneamento b\u00e1sico. Informa\u00e7\u00e3o composta por indicadores de gerenciamento de comit\u00eas de bacias hidrogr\u00e1ficas, planejamento municipal e articula\u00e7\u00e3o interinstitucional para gerir o saneamento b\u00e1sico e o n\u00edvel de implanta\u00e7\u00e3o da Agenda 21 local.<br><br>Fonte:<br>Sistema Brasileiro de Monitoramento e Observa\u00e7\u00e3o de Impactos da Mudan\u00e7a Clim\u00e1tica - SISMOI",
-		"value": 0.34
+		"value": 0.07
 	}, {
 		"id": 33,
 		"title": "Capacidade Socioecon\u00f4mica Familiar para a Chuva",
-		"complete_description": "Capacidade da estrutura familiar de responder positivamente a eventuais situa\u00e7\u00f5es de excesso de chuva. Informa\u00e7\u00e3o resultante da composi\u00e7\u00e3o do \u00edndice de Theil e da renda per capita.<br><br>Fonte:<br>Sistema Brasileiro de Monitoramento e Observa\u00e7\u00e3o de Impactos da Mudan\u00e7a Clim\u00e1tica - SISMOI",
-		"value": 0.21
+		"value": 0.01
 	}],
 	"lastlevel": [{
-		"id": 54,
-		"title": "Planejamento sobre Saneamento B\u00e1sico",
-		"complete_description": "N\u00edvel de implenta\u00e7\u00e3o e articula\u00e7\u00e3o de planos levou em considera\u00e7\u00e3o os munic\u00edpios que possuem um plano municipal de saneamento b\u00e1sico nas suas diferentes a\u00e7\u00f5es e/ou aqueles possu\u00edam algum tipo de articula\u00e7\u00e3o de cons\u00f3rcio p\u00fablico. As informa\u00e7\u00f5es-base foram obtidas em Pesquisa de Informa\u00e7\u00f5es B\u00e1sicas Municipais (MUNIC), do Instituto Brasileiro de Geografia e Estat\u00edstica (IBGE) para os anos de 2015 e 2017, conforme disponibilidade de dados.<br><br>Fonte:<br>Sistema Brasileiro de Monitoramento e Observa\u00e7\u00e3o de Impactos da Mudan\u00e7a Clim\u00e1tica - SISMOI",
-		"value": 0.19
+		"id": 55,
+		"title": "Agenda 21 Local",
+		"value": 0.24
 	}, {
 		"id": 53,
 		"title": "Planos de Gerenciamento dos Recursos H\u00eddricos",
-		"complete_description": "Indicador composto pela pondera\u00e7\u00e3o adotada para cada vari\u00e1vel componente: Legisla\u00e7\u00e3o, gest\u00e3o de bacias hidrogr\u00e1ficas, exist\u00eancia (0,52); Plano Municipal de Saneamento B\u00e1sico, elabora\u00e7\u00e3o, comit\u00ea da bacia hidrogr\u00e1fica (0,16); Estrutura, Comit\u00ea de Bacia Hidrogr\u00e1fica (0,16); Articula\u00e7\u00e3o Intermunicipal, forma, comit\u00ea de bacia hidrogr\u00e1fica (0,16). As informa\u00e7\u00f5es-base foram obtidas em Pesquisa de Informa\u00e7\u00f5es B\u00e1sicas Municipais (MUNIC), do Instituto Brasileiro de Geografia e Estat\u00edstica (IBGE) para o per\u00edodo entre 2008 e 2017, conforme disponibilidade de dados.<br><br>Fonte:<br>Sistema Brasileiro de Monitoramento e Observa\u00e7\u00e3o de Impactos da Mudan\u00e7a Clim\u00e1tica - SISMOI",
-		"value": 0.14
+		"value": 0.17
 	}, {
 		"id": 56,
 		"title": "\u00cdndice de Theil",
-		"complete_description": "Reflete as desigualdades de renda encontradas dentro e entre os domic\u00edlios. O \u00cdndice de Theil foi obtido no Atlas do Desenvolvimento Humano no Brasil, disponibilizado pelo Programa das Na\u00e7\u00f5es Unidas para o Desenvolvimento (PNUD) para o ano de 2010.<br><br>Fonte:<br>Sistema Brasileiro de Monitoramento e Observa\u00e7\u00e3o de Impactos da Mudan\u00e7a Clim\u00e1tica - SISMOI",
-		"value": 0.14
-	}, {
-		"id": 49,
-		"title": "Alternativa ao Abastecimento de \u00c1gua",
-		"complete_description": "Articula\u00e7\u00e3o p\u00fablica e seguran\u00e7a h\u00eddrica m\u00ednima da popula\u00e7\u00e3o. A composi\u00e7\u00e3o do indicador levou em considera\u00e7\u00e3o a pondera\u00e7\u00e3o atribu\u00edda a dois aspectos: articula\u00e7\u00e3o p\u00fablica e principal solu\u00e7\u00e3o alternativa de abastecimento de \u00e1gua. Aos munic\u00edpios que  tiveram algum apoio p\u00fablico para implementa\u00e7\u00e3o de alguma solu\u00e7\u00e3o alternativa, atribuiu-se valor 1,0 (um), caso contr\u00e1rio, 0,0 (zero). Quanto ao tipo de solu\u00e7\u00e3o alternativa ao abastecimento de \u00e1gua: Outra: 0,0, Corpos d\u0092\u00e1gua: 0,2, Chafariz, bica ou mina: 0,4, Caminh\u00e3o Pipa: 0,6, Po\u00e7o particular: 0,8. A informa\u00e7\u00e3o foi obtida em Distribui\u00e7\u00e3o de \u00c1gua, Principal Solu\u00e7\u00e3o Alternativa, disponibilizada em Pol\u00edtica Nacional de Saneamento B\u00e1sico (PNSB) pelo Instituto Brasileiro de Geografia e Estat\u00edstica (IBGE) para o ano de 2008.<br><br>Fonte:<br>Sistema Brasileiro de Monitoramento e Observa\u00e7\u00e3o de Impactos da Mudan\u00e7a Clim\u00e1tica - SISMOI",
-		"value": 0.13
-	}, {
-		"id": 52,
-		"title": "Monitoramento e Prioridade Federal",
-		"complete_description": "Munic\u00edpios monitorados pelo Centro Nacional de Monitoramento e Alertas de Desastres Naturais (CEMADEN) e/ou CASA CIVIL com intuito de acompanhar as amea\u00e7as naturais em \u00e1reas de riscos em munic\u00edpios brasileiros suscet\u00edveis \u00e0 ocorr\u00eancia de desastres naturais objetivando reduzir o n\u00famero de v\u00edtimas fatais. O indicador foi composto pela lista de munic\u00edpios monitorados no ano de 2018, informa\u00e7\u00e3o disponibilizada pelo Centro Nacional de Monitoramento e Alertas de Desastres Naturais (CEMADEN).<br><br>Fonte:<br>Sistema Brasileiro de Monitoramento e Observa\u00e7\u00e3o de Impactos da Mudan\u00e7a Clim\u00e1tica - SISMOI",
-		"value": 0.12
-	}, {
-		"id": 57,
-		"title": "Pessoas Pobres",
-		"complete_description": "Propor\u00e7\u00e3o dos indiv\u00edduos com renda domiciliar per capita igual ou inferior a R$ 140,00 mensais, em reais de agosto de 2010. A propor\u00e7\u00e3o foi obtida em Propor\u00e7\u00e3o de Pobres, no Atlas do Desenvolvimento Humano no Brasil, disponibilizado pelo Programa das Na\u00e7\u00f5es Unidas para o Desenvolvimento (PNUD) para o ano de 2010.",
-		"value": 0.1
+		"value": 0.15
 	}, {
 		"id": 51,
 		"title": "Cidades Resilientes",
-		"complete_description": "Cidades ou \u00e1reas urbanas que seguem par\u00e2metros internacionalmente estabelecidos, relacionados principalmente \u00e0s mudan\u00e7as clim\u00e1ticas e ao risco; governos e popula\u00e7\u00e3o integrados aos problemas da cidade, etc. A pondera\u00e7\u00e3o foi atribu\u00edda segundo a ades\u00e3o (0,8) ou n\u00e3o (0,2) ao programa. A informa\u00e7\u00e3o foi obtida atrav\u00e9s da Secretaria Nacional de Prote\u00e7\u00e3o e Defesa Civil (SEDEC) para o per\u00edodo entre 2014 e 2016.<br><br>Fonte:<br>Sistema Brasileiro de Monitoramento e Observa\u00e7\u00e3o de Impactos da Mudan\u00e7a Clim\u00e1tica - SISMOI",
-		"value": 0.08
+		"value": 0.13
 	}, {
-		"id": 55,
-		"title": "Agenda 21 Local",
-		"complete_description": "N\u00edvel de implenta\u00e7\u00e3o e articula\u00e7\u00e3o da Agenda 21 Local foi obtido atrav\u00e9s de informa\u00e7\u00f5es sobre: Agenda 21 Local - elabora\u00e7\u00e3o, Agenda 21 Local - est\u00e1gio atual, Agenda 21 Local - f\u00f3rum, reuni\u00e3o \u00faltimos 12 meses. As informa\u00e7\u00f5es foram obtidas em Pesquisa de Informa\u00e7\u00f5es B\u00e1sicas Municipais (MUNIC), do Instituto Brasileiro de Geografia e Estat\u00edstica (IBGE) para o ano de 2008.<br><br>Fonte:<br>Sistema Brasileiro de Monitoramento e Observa\u00e7\u00e3o de Impactos da Mudan\u00e7a Clim\u00e1tica - SISMOI",
-		"value": 0.05
+		"id": 54,
+		"title": "Planejamento sobre Saneamento B\u00e1sico",
+		"value": 0.12
+	}, {
+		"id": 49,
+		"title": "Alternativa ao Abastecimento de \u00c1gua",
+		"value": 0.07
+	}, {
+		"id": 52,
+		"title": "Monitoramento e Prioridade Federal",
+		"value": 0.07
+	}, {
+		"id": 57,
+		"title": "Pessoas Pobres",
+		"value": 0.03
 	}, {
 		"id": 50,
 		"title": "Planos de Conting\u00eancia para Desastres ambientais",
-		"complete_description": "Pondera\u00e7\u00e3o atribu\u00edda para a exist\u00eancia (0,8) ou n\u00e3o (0,2) de planos de conting\u00eancia para desastres ambientais. A informa\u00e7\u00e3o foi obtida em Pesquisa de Informa\u00e7\u00f5es B\u00e1sicas Municipais (MUNIC), disponibilizada pelo Instituto Brasileiro de Geografia e Estat\u00edstica (IBGE) para o ano de 2010.<br><br>Fonte:<br>Sistema Brasileiro de Monitoramento e Observa\u00e7\u00e3o de Impactos da Mudan\u00e7a Clim\u00e1tica - SISMOI",
-		"value": 0.04
+		"value": 0.01
 	}]
 }
 ```
