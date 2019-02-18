@@ -228,7 +228,7 @@ json contendo registros pesquisados.
 
 #### Exemplo de retorno (alguns registros de uma consulta):
 
-```
+```json
 [   
   {
 		"id": 265041,
@@ -286,7 +286,7 @@ json contendo registros pesquisados.
  
  #### Exemplo de retorno (Registro de uma consulta, com as coordenadas reduzidas):
 
-```
+```json
 	"features": [{
 			"type": "Feature",
 			"properties": {
@@ -353,7 +353,7 @@ O json é hierárquico, ou seja, existe uma estrutura de árvore entre os regist
  
  #### Exemplo de retorno (Parte da hierarquia):
 
-```
+```json
 {
 	"2010": {
 		"verylow": {
@@ -388,7 +388,7 @@ O json é hierárquico, ou seja, existe uma estrutura de árvore entre os regist
 				}, ...
 ```
 
-### e) getInfo (funcionando com dados aleatórios, ainda não são dados reais!!!)
+### f) getInfo (funcionando com dados aleatórios, ainda não são dados reais!!!)
 
 Os valores dos indicadores com nível menor que 6 são compostos por indicadores de níveis abaixo.
 Esse serviço retorna a composição dos valores dos indicadores com base nos níveis seguintes
@@ -424,7 +424,7 @@ O json é hierárquico, ou seja, existe uma estrutura de árvore entre os regist
  
  #### Exemplo de retorno (Parte da hierarquia):
  
- ```
+ ```json
  {
 	"nextlevel": [{
 		"id": 65,
