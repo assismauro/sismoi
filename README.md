@@ -484,16 +484,12 @@ Retorna os dados referentes a um determinado indicador.
 
 #### Parâmetros:
 
-
- - **clipping:** recorte do mapa. Alternativas: "semiárido", "SE", "PE", "MG", "CE", "BA", "PI", "AL", "PB", "RN", "MA"
- - **resolution:** resolução do mapa. Alternativas: "microrregiao", "mesorregiao", "municipio", "estado"
  - **indicator_id:** id do indicador a ser exibido
- - **resolution_id:** id do objeto a ser exibido, conforme a resolução (**county_id** para a resolução **município**, **microregion_id** para a resolução **microrregiao**, **macroregion_id** para a resolução **macrorregiao**  e **state** para a resolução **estado**).  
  
 #### Exemplo de chamada:
 
 ```
-curl -i http://127.0.0.1:5000/sismoi/getInfo/clipping=CE,resolution=mesorregiao,indicator_id=1,resolution_id=10
+curl -i http://127.0.0.1:5000/sismoi/getIndicatorData/indicator_id=1
 ```
 
 #### Retorno: 
