@@ -477,3 +477,57 @@ O json é hierárquico, ou seja, existe uma estrutura de árvore entre os regist
 	}]
 }
 ```
+
+### g) getIndicatorData 
+
+Retorna os dados referentes a um determinado indicador.
+
+#### Parâmetros:
+
+
+ - **clipping:** recorte do mapa. Alternativas: "semiárido", "SE", "PE", "MG", "CE", "BA", "PI", "AL", "PB", "RN", "MA"
+ - **resolution:** resolução do mapa. Alternativas: "microrregiao", "mesorregiao", "municipio", "estado"
+ - **indicator_id:** id do indicador a ser exibido
+ - **resolution_id:** id do objeto a ser exibido, conforme a resolução (**county_id** para a resolução **município**, **microregion_id** para a resolução **microrregiao**, **macroregion_id** para a resolução **macrorregiao**  e **state** para a resolução **estado**).  
+ 
+#### Exemplo de chamada:
+
+```
+curl -i http://127.0.0.1:5000/sismoi/getInfo/clipping=CE,resolution=mesorregiao,indicator_id=1,resolution_id=10
+```
+
+#### Retorno: 
+
+json contendo registros pesquisados. 
+
+#### Descição dos campos do json:
+
+O json é hierárquico, ou seja, existe uma estrutura de árvore entre os registros:
+
+ - **complete_description:** descrição completa do indicador.
+ - **equation:** equação de ponderação do valor do indicador (null, por enquanto).
+ - **id:** id do indicador.
+ - **level:** nível do indicador.
+ - **name:** nome do indicador.
+ - **shorname:** sigla do indicador, a ser usado na equação de ponderação (null por enquanto).
+ - **simple_description:** descrição simples do indicador.
+ - **title:** título do indicador.
+ - **years:** lista de anos em que o indicador ocorre, separados por vírgula.
+ - **pessimist:** se igual a 0, o indicador é "bom" quando o valor é alto, se igual a 1, quanto maior o valor do indicador pior é.
+   
+ #### Exemplo de retorno para o indicador 2:
+ 
+``` json
+[{
+	"id": 2,
+	"name": "*Seca",
+	"title": "*\u00cdndice de Impacto para a Seca",
+	"shortname": null,
+	"simple_description": "Impacto das mudan\u00e7as clim\u00e1ticas em sistemas naturais e humanos, considerando a perturba\u00e7\u00e3o clim\u00e1tica de seca",
+	"complete_description": "Impacto das mudan\u00e7as clim\u00e1ticas em sistemas naturais e humanos, resultante da intera\u00e7\u00e3o entre os eventos clim\u00e1ticos relacionados \u00e0 seca, vulnerabilidade e de exposi\u00e7\u00e3o da sociedade ou sistema.<br><br>Fonte:<br> Sistema Brasileiro de Monitoramento e Observa\u00e7\u00e3o de Impactos da Mudan\u00e7a Clim\u00e1tica - SISMOI",
+	"equation": null,
+	"level": 2,
+	"pessimist": 1,
+	"years": "2015,2030,2050"
+}]
+```
