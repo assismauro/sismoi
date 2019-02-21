@@ -516,8 +516,8 @@ O json é hierárquico, ou seja, existe uma estrutura de árvore entre os regist
 ``` json
 [{
 	"id": 2,
-	"name": "*Seca",
-	"title": "*\u00cdndice de Impacto para a Seca",
+	"name": "Seca",
+	"title": "\u00cdndice de Impacto para a Seca",
 	"shortname": null,
 	"simple_description": "Impacto das mudan\u00e7as clim\u00e1ticas em sistemas naturais e humanos, considerando a perturba\u00e7\u00e3o clim\u00e1tica de seca",
 	"complete_description": "Impacto das mudan\u00e7as clim\u00e1ticas em sistemas naturais e humanos, resultante da intera\u00e7\u00e3o entre os eventos clim\u00e1ticos relacionados \u00e0 seca, vulnerabilidade e de exposi\u00e7\u00e3o da sociedade ou sistema.<br><br>Fonte:<br> Sistema Brasileiro de Monitoramento e Observa\u00e7\u00e3o de Impactos da Mudan\u00e7a Clim\u00e1tica - SISMOI",
