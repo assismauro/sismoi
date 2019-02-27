@@ -404,7 +404,7 @@ Esse serviço retorna a composição dos valores dos indicadores com base nos n�
 #### Exemplo de chamada:
 
 ```
-curl -i http://127.0.0.1:5000/sismoi/getInfo/clipping=CE,resolution=mesorregiao,indicator_id=1,resolution_id=10
+curl -i http://127.0.0.1:5000/sismoi/getInfo/clipping=CE,resolution=mesorregiao,indicator_id=1,scenario_id=null,resolution_id=10
 ```
 
 #### Retorno: 
