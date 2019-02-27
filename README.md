@@ -388,7 +388,7 @@ O json é hierárquico, ou seja, existe uma estrutura de árvore entre os regist
 				}, ...
 ```
 
-### f) getInfo (funcionando com dados aleatórios, ainda não são dados reais!!!)
+### f) getInfo
 
 Os valores dos indicadores com nível menor que 6 são compostos por indicadores de níveis abaixo.
 Esse serviço retorna a composição dos valores dos indicadores com base nos níveis seguintes
