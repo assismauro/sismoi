@@ -398,6 +398,7 @@ Esse serviço retorna a composição dos valores dos indicadores com base nos n�
  - **clipping:** recorte do mapa. Alternativas: "semiárido", "SE", "PE", "MG", "CE", "BA", "PI", "AL", "PB", "RN", "MA"
  - **resolution:** resolução do mapa. Alternativas: "microrregiao", "mesorregiao", "municipio", "estado"
  - **indicator_id:** id do indicador a ser exibido
+ - **scenario_id:** 1 (Otimista), 2 (Pessimista) ou null quando o indicador não tiver essa cenários.
  - **resolution_id:** id do objeto a ser exibido, conforme a resolução (**county_id** para a resolução **município**, **microregion_id** para a resolução **microrregiao**, **macroregion_id** para a resolução **macrorregiao**  e **state** para a resolução **estado**).  
  
 #### Exemplo de chamada:
