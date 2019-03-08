@@ -417,66 +417,55 @@ O json é hierárquico, ou seja, existe uma estrutura de árvore entre os regist
 
  - **nextlevel** ou **lastlevel** indica se a estrutura contém somente o próximo nível de indicador ou se contém todos eles.
    - **id** é o id do indicador.
+   - **pessimist:** se igual a 0, o indicador é "bom" quando o valor é alto, se igual a 1, quanto maior o valor do indicador pior é.
    - **title** título do indicador.
    - **value** fração do indicador que compõe o indicador pesquisado. A soma em nextlevel é igual a 1.
    
  Sobre a ordenação dos dados, ver tópico **Sobre a ordenação dos valores** acima.
  
- #### Exemplo de retorno para o indicador 26, nível 4:
+ #### Exemplo de retorno para o indicador 13:
  
  ```json
- {
+{
 	"nextlevel": [{
-		"id": 31,
-		"title": "Planos ou A\u00e7\u00f5es Emergenciais e/ou Estruturais para a Chuva",
-		"value": 0.24
-	}, {
-		"id": 32,
-		"title": "Gest\u00e3o dos Recursos H\u00eddricos para a Chuva",
-		"value": 0.07
-	}, {
-		"id": 33,
-		"title": "Capacidade Socioecon\u00f4mica Familiar para a Chuva",
-		"value": 0.01
-	}],
-	"lastlevel": [{
-		"id": 55,
-		"title": "Agenda 21 Local",
-		"value": 0.24
-	}, {
-		"id": 53,
-		"title": "Planos de Gerenciamento dos Recursos H\u00eddricos",
-		"value": 0.17
-	}, {
-		"id": 56,
-		"title": "\u00cdndice de Theil",
-		"value": 0.15
-	}, {
-		"id": 51,
-		"title": "Cidades Resilientes",
-		"value": 0.13
-	}, {
-		"id": 54,
-		"title": "Planejamento sobre Saneamento B\u00e1sico",
-		"value": 0.12
-	}, {
 		"id": 49,
-		"title": "Alternativa ao Abastecimento de \u00c1gua",
-		"value": 0.07
-	}, {
-		"id": 52,
-		"title": "Monitoramento e Prioridade Federal",
-		"value": 0.07
-	}, {
-		"id": 57,
-		"title": "Pessoas Pobres",
-		"value": 0.03
+		"pessimist": 0,
+		"title": "Planos de Conting\u00eancia - Desastres ambientais",
+		"year": 2008,
+		"value": 1.0
 	}, {
 		"id": 50,
-		"title": "Planos de Conting\u00eancia para Desastres ambientais",
-		"value": 0.01
+		"pessimist": 0,
+		"title": "Cidades Resilientes",
+		"year": 2010,
+		"value": 1.0
+	}],
+	"lastlevel": [{
+		"id": 51,
+		"pessimist": 0,
+		"title": "Monitoramento e Prioridade Federal",
+		"year": 2015,
+		"value": 42.0
+	}, {
+		"id": 50,
+		"pessimist": 0,
+		"title": "Cidades Resilientes",
+		"year": 2015,
+		"value": 33.0
+	}, {
+		"id": 49,
+		"pessimist": 0,
+		"title": "Planos de Conting\u00eancia - Desastres ambientais",
+		"year": 2015,
+		"value": 25.0
+	}, {
+		"id": 52,
+		"pessimist": 0,
+		"title": "Planos de Gerenciamento de Recursos H\u00eddricos",
+		"year": 2015,
+		"value": 0.0
 	}]
-}
+}}
 ```
 
 ### g) getIndicatorData 
