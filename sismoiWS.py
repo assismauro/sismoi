@@ -29,8 +29,6 @@ statsOff = False
 
 currentYear = datetime.datetime.today().year
 
-defaultConnStr = "dbname='sismoi' user='sismoi' host='200.133.39.41' password='142857'"
-
 def startApp():
     app = Flask('sismoiWS')
     return app
@@ -44,14 +42,17 @@ def ProcessCmdLine():
     parser.add_argument("-so", "--statsoff", help="Deactivate stats monitoring", action='store_true')
     parser.add_argument("-host", "--host", help="Host IP", type=str, default="127.0.0.1")
     parser.add_argument("-p", "--port", type=str, help="Port to be used", default=5000)
-    parser.add_argument("-cs", "--connstr", type=str, help="Connection string", default=defaultConnStr)
+    parser.add_argument("-dbip", "--databaseip", help="Database IP", type=str, default="127.0.0.1")
+    parser.add_argument("-db", "--dbname", type=str, help="Database name", default='sismoi')
+    parser.add_argument("-pwd", "--password", type=str, help="Database password")
+    parser.add_argument("-u", "--user", type=str, help="Database user name")
     parser.add_argument("-c", "--cachetype", type=int, help="Cache type: 0 for no cache, 1 for plain, 2 for compressed",
                         default=1)
     return parser.parse_args()
 
 def log(service,params,cache):
     if args.log:
-        conn = psycopg2.connect(args.connstr)
+        conn = psycopg2.connect("dbname='{0}' user='{1}' host='{2}' password='{3}'".format(args.dbname,args.user,args.databaseip,args.password))
         curr = conn.cursor()
         try:
             curr.execute(
@@ -107,7 +108,8 @@ def printDebug(line):
 
 def executeSQL(sql,cursorFactory=None):
     try:
-        conn = psycopg2.connect(args.connstr)
+        conn = psycopg2.connect("dbname='{0}' user='{1}' host='{2}' password='{3}'".format(args.dbname,args.user,args.databaseip,args.password))
+
         if cursorFactory == None:
             curr = conn.cursor()
         else:
@@ -218,39 +220,21 @@ def toGroupedDict(data,pessimist):
         ret[data[i]['year']]['count'] += 1
     return ret
 
-def getIndicatorByCounty(params):
-    data=getDictResultset('''select v.county_id as id, c.name, v.indicator_id, v.year, v.scenario_id, i.pessimist, round(v.value::numeric,2)::float as value from value v 
-                             inner join county c
-                             on v.county_id = c.id
-                             inner join indicator i
-                             on v.indicator_id = i.id
-                             where v.indicator_id = {0}
-                               and v.scenario_id {1} 
-                               {2}
-                               and year = {3}
-                             order by v.county_id, v.year, v.scenario_id
-                          '''.format(params['indicator_id'],
-                                     ' = ' +params['scenario_id'] if params['scenario_id'] != 'null' else 'is null',
-                                     "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
-                                     params['year'])
-                          )
-    return addFeatureColor(data)
-
-def getIndicatorByMicroregion(params):
-    data=getDictResultset('''select c.microregion_id as id, m.name, indicator_id, i.pessimist, v.scenario_id,year, round(avg(v.value)::numeric,2)::float as value
-                              from value v
-                             inner join county c
-                                on v.county_id = c.id 
-                             inner join indicator i
-                             on v.indicator_id = i.id
-                             inner join microregion m
-                                on c.microregion_id = m.id
-                             where indicator_id = {0}
-                               and scenario_id {1}
-                               {2}
-                               and year = {3}
-                            group by  c.microregion_id, m.name, v.indicator_id, i.pessimist, v.year, v.scenario_id
-                             order by                   m.name, v.year, v.scenario_id
+def getIndicatorByState(params):
+    data=getDictResultset('''select s.id, s.state, s.name, s.state, v.indicator_id, i.pessimist, v.scenario_id, year, round(avg(v.value)::numeric,2)::float as value
+                               from value v
+                              inner join indicator i
+                                 on v.indicator_id = i.id
+                              inner join county c
+                                 on v.county_id = c.id
+                              inner join state s
+                                 on c.state = s.state                                    
+                              where indicator_id = {0}
+                                and scenario_id {1}
+                                {2}
+                                and year = {3}
+                            group by s.id, s.state, s.name, v.indicator_id, i.pessimist, v.scenario_id,year
+                             order by s.state, v.indicator_id, v.scenario_id,year
                           '''.format(params['indicator_id'],
                                      ' = ' +params['scenario_id'] if params['scenario_id'] != 'null' else 'is null',
                                      "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
@@ -280,21 +264,39 @@ def getIndicatorByMesoregion(params):
                           )
     return addFeatureColor(data)
 
-def getIndicatorByState(params):
-    data=getDictResultset('''select s.id, s.state, s.name, s.state, v.indicator_id, i.pessimist, v.scenario_id, year, round(avg(v.value)::numeric,2)::float as value
-                               from value v
-                              inner join indicator i
-                                 on v.indicator_id = i.id
-                              inner join county c
-                                 on v.county_id = c.id
-                              inner join state s
-                                 on c.state = s.state                                    
-                              where indicator_id = {0}
-                                and scenario_id {1}
-                                {2}
-                                and year = {3}
-                            group by s.id, s.state, s.name, v.indicator_id, i.pessimist, v.scenario_id,year
-                             order by s.state, v.indicator_id, v.scenario_id,year
+def getIndicatorByMicroregion(params):
+    data=getDictResultset('''select c.microregion_id as id, m.name, indicator_id, i.pessimist, v.scenario_id,year, round(avg(v.value)::numeric,2)::float as value
+                              from value v
+                             inner join county c
+                                on v.county_id = c.id 
+                             inner join indicator i
+                             on v.indicator_id = i.id
+                             inner join microregion m
+                                on c.microregion_id = m.id
+                             where indicator_id = {0}
+                               and scenario_id {1}
+                               {2}
+                               and year = {3}
+                            group by  c.microregion_id, m.name, v.indicator_id, i.pessimist, v.year, v.scenario_id
+                             order by                   m.name, v.year, v.scenario_id
+                          '''.format(params['indicator_id'],
+                                     ' = ' +params['scenario_id'] if params['scenario_id'] != 'null' else 'is null',
+                                     "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
+                                     params['year'])
+                          )
+    return addFeatureColor(data)
+
+def getIndicatorByCounty(params):
+    data=getDictResultset('''select v.county_id as id, c.name, v.indicator_id, v.year, v.scenario_id, i.pessimist, round(v.value::numeric,2)::float as value from value v 
+                             inner join county c
+                             on v.county_id = c.id
+                             inner join indicator i
+                             on v.indicator_id = i.id
+                             where v.indicator_id = {0}
+                               and v.scenario_id {1} 
+                               {2}
+                               and year = {3}
+                             order by v.county_id, v.year, v.scenario_id
                           '''.format(params['indicator_id'],
                                      ' = ' +params['scenario_id'] if params['scenario_id'] != 'null' else 'is null',
                                      "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
@@ -303,7 +305,6 @@ def getIndicatorByState(params):
     return addFeatureColor(data)
 
 def getTotalByState(params):
-    pessimist = indicLevelYears[int(params['indicator_id'])]['level']
     rawdata=getDictResultset('''select s.id, s.state, s.name, year, 
                              case
                                 when round(avg(v.value)::numeric,2) between 0   and 0.2 then 'verylow'
@@ -332,14 +333,13 @@ def getTotalByState(params):
                              (' and (scenario_id = {0} or scenario_id is null)'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
                               "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
                               'and v.year = {0}'.format(params['year']) if 'year' in params else '',
-                              ('desc' if pessimist == 0 else '')
+                              ('desc' if indicLevelYears[int(params['indicator_id'])]['level'] == 0 else '')
                              )
                           )
-    data=toGroupedDict(rawdata,pessimist)
+    data=toGroupedDict(rawdata,indicLevelYears[int(params['indicator_id'])]['level'])
     return data
 
 def getTotalByMesoregion(params):
-    pessimist = indicLevelYears[int(params['indicator_id'])]['level']
     rawdata=getDictResultset('''select c.mesoregion_id as id, m.name, year,
                              case
                                 when round(avg(v.value)::numeric,2) between 0   and 0.2 then 'verylow'
@@ -365,14 +365,13 @@ def getTotalByMesoregion(params):
                              (' and (scenario_id = {0} or scenario_id is null)'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
                               "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
                               'and v.year = {0}'.format(params['year']) if 'year' in params else '',
-                              ('desc' if pessimist == 0 else '')
+                              ('desc' if indicLevelYears[int(params['indicator_id'])]['level'] == 0 else '')
                              )
                           )
-    data=toGroupedDict(rawdata,pessimist)
+    data=toGroupedDict(rawdata,indicLevelYears[int(params['indicator_id'])]['level'])
     return data
 
 def getTotalByMicroregion(params):
-    pessimist = indicLevelYears[int(params['indicator_id'])]['level']
     rawdata=getDictResultset('''select c.microregion_id as id, m.name, year, 
                              case
                                 when round(avg(v.value)::numeric,2) between 0   and 0.2 then 'verylow'
@@ -398,14 +397,13 @@ def getTotalByMicroregion(params):
                              (' and (scenario_id = {0} or scenario_id is null)'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
                               "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
                               'and v.year = {0}'.format(params['year']) if 'year' in params else '',
-                              ('desc' if pessimist == 0 else '')
+                              ('desc' if indicLevelYears[int(params['indicator_id'])]['level'] == 0 else '')
                              )
                           )
-    data=toGroupedDict(rawdata,pessimist)
+    data=toGroupedDict(rawdata,indicLevelYears[int(params['indicator_id'])]['level'])
     return data
 
 def getTotalByCounty(params):
-    pessimist = indicLevelYears[int(params['indicator_id'])]['level']
     rawdata=getDictResultset('''select c.id, c.name, year, 
                                 case
                                     when round(v.value::numeric,2) between 0   and 0.2 then 'verylow'
@@ -428,18 +426,14 @@ def getTotalByCounty(params):
                              (' and (scenario_id = {0} or scenario_id is null)'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
                               "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
                               'and v.year = {0}'.format(params['year']) if 'year' in params else '',
-                              ('desc' if pessimist == 0 else '')
+                              ('desc' if indicLevelYears[int(params['indicator_id'])]['level'] == 0 else '')
                              )
                           )
-    data=toGroupedDict(rawdata,pessimist)
+    data=toGroupedDict(rawdata,indicLevelYears[int(params['indicator_id'])]['level'])
     return data
 
 def getInfoByState(params):
-    if indicLevelYears[int(params['indicator_id'])]['level'] == 6:
-        raise Exception('sismoiErr: getInfo: o indicator_id = {0} é de nível 6'.format(params['indicator_id']))
-
-    data = {'nextlevel': {}, 'lastlevel': {}}
-    data['nextlevel'] = getDictResultset(
+    return {'nextlevel': getDictResultset(
         '''
     select distinct id,pessimist,
                 first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
@@ -469,13 +463,8 @@ def getInfoByState(params):
             else '((scenario_id = {0}) or (scenario_id is null))'.format(params['scenario_id']),
             params['resolution_id'],
             indicLevelYears[int(params['indicator_id'])]['level'] + 1
-        ))
-
-    if len(data['nextlevel']) == 0:
-        raise Exception('sismoiErr: getInfo: o indicator_id = {0} não é composto de outros indicadores.'. \
-                        format(params['indicator_id']))
-
-    data['lastlevel'] = getDictResultset(
+        )),
+        'lastlevel': getDictResultset(
         '''select distinct id,pessimist,
             first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
             first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
@@ -500,15 +489,13 @@ order by 5 desc'''.format(
             'master_scenario_id is null' if int(params['year']) <= currentYear
             else '((master_scenario_id = {0}) or (master_scenario_id is null))'.format(params['scenario_id']),
             params['resolution_id']
-        ))
-    return data
+        ))}
 
 def getInfoByMesoregion(params):
     if indicLevelYears[int(params['indicator_id'])]['level'] == 6:
         raise Exception('sismoiErr: getInfo: o indicator_id = {0} é de nível 6'.format(params['indicator_id']))
 
-    data = {'nextlevel': {}, 'lastlevel': {}}
-    data['nextlevel'] = getDictResultset(
+    data = {'nextlevel': getDictResultset(
         '''
     select distinct id,pessimist,
                 first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
@@ -538,13 +525,8 @@ def getInfoByMesoregion(params):
             else '((scenario_id = {0}) or (scenario_id is null))'.format(params['scenario_id']),
             params['resolution_id'],
             indicLevelYears[int(params['indicator_id'])]['level'] + 1
-        ))
-
-    if len(data['nextlevel']) == 0:
-        raise Exception('sismoiErr: getInfo: o indicator_id = {0} não é composto de outros indicadores.'. \
-                        format(params['indicator_id']))
-
-    data['lastlevel'] = getDictResultset(
+        )),
+        'lastlevel': getDictResultset(
         '''select distinct id,pessimist,
             first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
             first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
@@ -569,18 +551,14 @@ order by 5 desc'''.format(
             'master_scenario_id is null' if int(params['year']) <= currentYear
             else '((master_scenario_id = {0}) or (master_scenario_id is null))'.format(params['scenario_id']),
             params['resolution_id']
-        ))
+        ))}
     return data
-
 
 def getInfoByMicroregion(params):
     if indicLevelYears[int(params['indicator_id'])]['level'] == 6:
         raise Exception('sismoiErr: getInfo: o indicator_id = {0} é de nível 6'.format(params['indicator_id']))
 
-    data={'nextlevel':{},'lastlevel':{}}
-    data['nextlevel']=getDictResultset(
-    '''
-select distinct id,pessimist,
+    data = {'nextlevel':getDictResultset('''select distinct id,pessimist,
             first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
             first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
             round(first_value(value) over (partition by id order by year desc range between unbounded preceding and unbounded following)::numeric,2)::float as value 
@@ -608,14 +586,8 @@ order by 5 desc'''.format(
         else '((scenario_id = {0}) or (scenario_id is null))'.format(params['scenario_id']),
         params['resolution_id'],
         indicLevelYears[int(params['indicator_id'])]['level'] + 1
-    ))
-
-    if len(data['nextlevel']) == 0:
-        raise Exception('sismoiErr: getInfo: o indicator_id = {0} não é composto de outros indicadores.'.\
-                        format(params['indicator_id']))
-
-    data['lastlevel'] = getDictResultset(
-        '''select distinct id,pessimist,
+    )),
+        'lastlevel':getDictResultset('''select distinct id,pessimist,
             first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
             first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
             round(first_value(value) over (partition by id order by year desc range between unbounded preceding and unbounded following)::numeric)::integer as value 
@@ -639,16 +611,14 @@ order by 5 desc'''.format(
             'master_scenario_id is null' if int(params['year']) <= currentYear
             else '((master_scenario_id = {0}) or (master_scenario_id is null))'.format(params['scenario_id']),
             params['resolution_id']
-        ))
+        ))}
     return data
 
 def getInfoByCounty(params):
     if indicLevelYears[int(params['indicator_id'])]['level'] == 6:
         raise Exception('sismoiErr: getInfo: o indicator_id = {0} é de nível 6'.format(params['indicator_id']))
 
-    data={'nextlevel':{},'lastlevel':{}}
-
-    data['nextlevel']=getDictResultset(
+    data={'nextlevel':getDictResultset(
       '''select distinct i.id,i.pessimist,
             first_value(title) over (partition by i.id order by year desc range between unbounded preceding and unbounded following) as title,
             first_value(year) over (partition by i.id order by year desc range between unbounded preceding and unbounded following) as year,
@@ -670,9 +640,7 @@ def getInfoByCounty(params):
                                 else '((scenario_id = {0}) or (scenario_id is null))'.format(params['scenario_id']),
           params['resolution_id'],
           indicLevelYears[int(params['indicator_id'])]['level']+1
-    ))
-
-    data['lastlevel'] = getDictResultset(
+    )),'lastlevel':getDictResultset(
         '''select distinct i.id,i.pessimist,
               first_value(title) over (partition by i.id order by master_year desc range between unbounded preceding and unbounded following) as title,
               first_value(master_year) over (partition by i.id order by master_year  desc range between unbounded preceding and unbounded following) as year,
@@ -691,7 +659,7 @@ def getInfoByCounty(params):
             'master_scenario_id is null' if int(params['year']) <= currentYear
             else '((master_scenario_id = {0}) or (master_scenario_id is null))'.format(params['scenario_id']),
             params['resolution_id']
-        ))
+        ))}
     return data
 
 def getStateGeometry(clipping):
@@ -811,6 +779,7 @@ def getGeometry(sparams):
     cacheName='getGeometry@resolution={0},clipping={1}'.format(params['resolution'],params['clipping'])
     incache=inCache(cacheName)
     log('getGeometry',cacheName.split('@')[1],incache)
+    map = None
     if incache:
         return fromCache(cacheName)
     if params['resolution'] == 'estado':
@@ -821,15 +790,6 @@ def getGeometry(sparams):
         map = getMicroregionGeometry(params['clipping'])
     elif params['resolution'] == 'mesorregiao':
         map = getMesoregionGeometry(params['clipping'])
-    else:
-        map=json.loads(getValue("select geojson from geojson where name = '{0}'".format(params['resolution'])))
-        if params['clipping'] != 'semiarido':
-            i=0
-            while i < len(map['features']):
-                if params['clipping'] != map['features'][i]['properties']['state']:
-                    del map['features'][i]
-                else:
-                    i+=1
     ret=json.dumps(map)
     toCache(cacheName,ret)
     return ret
@@ -997,8 +957,9 @@ Cache Hits: {3}
 Cache Hits Efficiency: {7}%
 Cache Length: {4}
 Cache Size: {5} kbytes
+Log: {8}
 '''.format(''.join(s),accesses,cacheType,cacheHits,len(cache),int(get_deep_size(cache)/1024),line,
-           round((cacheHits/accesses*100 if accesses > 0 else 0.0),2))
+           round((cacheHits/accesses*100 if accesses > 0 else 0.0),2),args.log)
 
 if __name__ == "__main__":
     try:
@@ -1006,6 +967,10 @@ if __name__ == "__main__":
         clippings = clippings + getStates()
         indicLevelYears = getIndicLevelYears()
         cacheType=args.cachetype
+
+        cacheType = 0
+        args.log = True
+
         statsOff = args.statsoff
 
         app.run(host=args.host, port=args.port, debug=args.debug)
