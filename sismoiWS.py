@@ -1,5 +1,6 @@
 from flask import Flask
 from flask import request
+import objsize
 import psycopg2
 import psycopg2.extras
 import argparse
@@ -7,10 +8,10 @@ import json
 import numpy as np
 import datetime
 import zlib
-from objsize import get_deep_size
 import time
 import sys
 import os
+import sisCommons
 
 resolutions = ['microrregiao','mesorregiao','municipio','estado']
 
@@ -18,7 +19,7 @@ classes = ['verylow','low','mid','high','veryhigh']
 
 clippings = ['semiarido']
 
-colorMap = ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641']
+colorMap = ['#F40000', '#FF8300', '#FFCD00', '#A9DE00', '#02C650']
 
 cache = {}
 cacheType = -1
@@ -38,7 +39,7 @@ app = startApp()
 def ProcessCmdLine():
     parser = argparse.ArgumentParser(description="SISMOI WebServices.")
     parser.add_argument("-d", "--debug", help="Activate Flask debug mode", action='store_true')
-    parser.add_argument("-l", "--log", help="Log calls to database", action='store_false')
+    parser.add_argument("-l", "--log", help="Log calls to database", action='store_true')
     parser.add_argument("-so", "--statsoff", help="Deactivate stats monitoring", action='store_true')
     parser.add_argument("-host", "--host", help="Host IP", type=str, default="127.0.0.1")
     parser.add_argument("-p", "--port", type=str, help="Port to be used", default=5000)
@@ -52,15 +53,16 @@ def ProcessCmdLine():
 
 def log(service,params,cache):
     if args.log:
-        conn = psycopg2.connect("dbname='{0}' user='{1}' host='{2}' password='{3}'".format(args.dbname,args.user,args.databaseip,args.password))
+        conn = sisCommons.connectDB()
         curr = conn.cursor()
         try:
             curr.execute(
                 "insert into log(service,params,cache,date,script,iprequest) values ('{0}','{1}',{2},now(),'{3}','{4}')". \
                 format(service, params, int(cache), os.path.basename(sys.argv[0]), request.environ['REMOTE_ADDR']))
             conn.commit()
-        except:
+        except Exception as e:
             return
+
 
 def updStats(label,fromCache=True):
     if not statsOff:
@@ -83,7 +85,6 @@ def fromCache(label):
     return cache[label] if cacheType == 1 else zlib.decompress(cache[label])
 
 def inCache(label):
-    global statsOff
     if not statsOff:
         key=label[:label.index('@')]
         if not(key in funcStats.keys()):
@@ -108,7 +109,7 @@ def printDebug(line):
 
 def executeSQL(sql,cursorFactory=None):
     try:
-        conn = psycopg2.connect("dbname='{0}' user='{1}' host='{2}' password='{3}'".format(args.dbname,args.user,args.databaseip,args.password))
+        conn = sisCommons.connectDB()
 
         if cursorFactory == None:
             curr = conn.cursor()
@@ -126,8 +127,7 @@ def getValue(sql):
     return None if rows == None else rows[0][0]
 
 def getDictResultset(sql):
-    resultset =executeSQL(sql, psycopg2.extras.DictCursor)
-    return [dict(row) for row in resultset]
+    return [dict(row) for row in executeSQL(sql, psycopg2.extras.DictCursor)]
 
 def getStates():
     return getDictResultset("select state from state")
@@ -243,7 +243,7 @@ def getIndicatorByState(params):
     return addFeatureColor(data)
 
 def getIndicatorByMesoregion(params):
-    data=getDictResultset('''select c.mesoregion_id as id, m.name, indicator_id, pessimist, v.scenario_id, year, round(avg(v.value)::numeric,2)::float as value
+    data=getDictResultset('''select c.mesoregion_id as id, concat(m.name,'/',m.state) as name, indicator_id, pessimist, v.scenario_id, year, round(avg(v.value)::numeric,2)::float as value
                                from value v
                               inner join indicator i
                                  on v.indicator_id = i.id
@@ -255,8 +255,8 @@ def getIndicatorByMesoregion(params):
                                 and scenario_id {1}
                                 {2}
                                 and year = {3}
-                            group by  c.mesoregion_id, m.name, v.indicator_id, i.pessimist, v.year, v.scenario_id
-                            order by                   m.name, v.year, v.scenario_id
+                            group by  c.mesoregion_id, concat(m.name,'/',m.state), v.indicator_id, i.pessimist, v.year, v.scenario_id
+                            order by                   concat(m.name,'/',m.state), v.year, v.scenario_id
                           '''.format(params['indicator_id'],
                                      ' = ' +params['scenario_id'] if params['scenario_id'] != 'null' else 'is null',
                                      "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
@@ -265,7 +265,7 @@ def getIndicatorByMesoregion(params):
     return addFeatureColor(data)
 
 def getIndicatorByMicroregion(params):
-    data=getDictResultset('''select c.microregion_id as id, m.name, indicator_id, i.pessimist, v.scenario_id,year, round(avg(v.value)::numeric,2)::float as value
+    data=getDictResultset('''select c.microregion_id as id, concat(m.name,'/',m.state) as name, indicator_id, i.pessimist, v.scenario_id,year, round(avg(v.value)::numeric,2)::float as value
                               from value v
                              inner join county c
                                 on v.county_id = c.id 
@@ -277,8 +277,8 @@ def getIndicatorByMicroregion(params):
                                and scenario_id {1}
                                {2}
                                and year = {3}
-                            group by  c.microregion_id, m.name, v.indicator_id, i.pessimist, v.year, v.scenario_id
-                             order by                   m.name, v.year, v.scenario_id
+                            group by  c.microregion_id, concat(m.name,'/',m.state), v.indicator_id, i.pessimist, v.year, v.scenario_id
+                             order by                   concat(m.name,'/',m.state), v.year, v.scenario_id
                           '''.format(params['indicator_id'],
                                      ' = ' +params['scenario_id'] if params['scenario_id'] != 'null' else 'is null',
                                      "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
@@ -287,7 +287,7 @@ def getIndicatorByMicroregion(params):
     return addFeatureColor(data)
 
 def getIndicatorByCounty(params):
-    data=getDictResultset('''select v.county_id as id, c.name, v.indicator_id, v.year, v.scenario_id, i.pessimist, round(v.value::numeric,2)::float as value from value v 
+    data=getDictResultset('''select v.county_id as id, concat(c.name,'/',c.state) as name, v.indicator_id, v.year, v.scenario_id, i.pessimist, round(v.value::numeric,2)::float as value from value v 
                              inner join county c
                              on v.county_id = c.id
                              inner join indicator i
@@ -296,7 +296,7 @@ def getIndicatorByCounty(params):
                                and v.scenario_id {1} 
                                {2}
                                and year = {3}
-                             order by v.county_id, v.year, v.scenario_id
+                             order by concat(c.name,'/',c.state), v.year, v.scenario_id
                           '''.format(params['indicator_id'],
                                      ' = ' +params['scenario_id'] if params['scenario_id'] != 'null' else 'is null',
                                      "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
@@ -340,7 +340,7 @@ def getTotalByState(params):
     return data
 
 def getTotalByMesoregion(params):
-    rawdata=getDictResultset('''select c.mesoregion_id as id, m.name, year,
+    rawdata=getDictResultset('''select c.mesoregion_id as id, concat(m.name,'/',m.state) as name, year,
                              case
                                 when round(avg(v.value)::numeric,2) between 0   and 0.2 then 'verylow'
                                 when round(avg(v.value)::numeric,2) between 0.2 and 0.4 then 'low'
@@ -359,8 +359,8 @@ def getTotalByMesoregion(params):
                                 {1}
                                 {2}
                                 {3}
-                             group by year, mesoregion_id, m.name
-                                order by year, value {4}, name
+                             group by year, mesoregion_id, concat(m.name,'/',m.state)
+                                order by year, value {4}, concat(m.name,'/',m.state)
                           '''.format(params['indicator_id'],
                              (' and (scenario_id = {0} or scenario_id is null)'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
                               "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
@@ -372,7 +372,7 @@ def getTotalByMesoregion(params):
     return data
 
 def getTotalByMicroregion(params):
-    rawdata=getDictResultset('''select c.microregion_id as id, m.name, year, 
+    rawdata=getDictResultset('''select m.id, concat(m.name,'/',m.state) as name, year, 
                              case
                                 when round(avg(v.value)::numeric,2) between 0   and 0.2 then 'verylow'
                                 when round(avg(v.value)::numeric,2) between 0.2 and 0.4 then 'low'
@@ -391,8 +391,8 @@ def getTotalByMicroregion(params):
                                 {1}
                                 {2}
                                 {3}
-                             group by year, c.microregion_id, m.name
-                                order by year, value {4}, name
+                             group by year, m.id, concat(m.name,'/',m.state)
+                                order by year, value {4},  concat(m.name,'/',m.state)
                           '''.format(params['indicator_id'],
                              (' and (scenario_id = {0} or scenario_id is null)'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
                               "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
@@ -404,7 +404,7 @@ def getTotalByMicroregion(params):
     return data
 
 def getTotalByCounty(params):
-    rawdata=getDictResultset('''select c.id, c.name, year, 
+    rawdata=getDictResultset('''select c.id, concat(c.name,'/',c.state) as name, year, 
                                 case
                                     when round(v.value::numeric,2) between 0   and 0.2 then 'verylow'
                                     when round(v.value::numeric,2) between 0.2 and 0.4 then 'low'
@@ -421,7 +421,7 @@ def getTotalByCounty(params):
                                 {1}
                                 {2}
                                 {3}
-                                order by year, value {4}, name
+                                order by year, value {4}, concat(c.name,'/',c.state)
                           '''.format(params['indicator_id'],
                              (' and (scenario_id = {0} or scenario_id is null)'.format(params['scenario_id'])) if params[ 'scenario_id'] != 'null' else '',
                               "and c.state = '{0}'".format(params['clipping']) if params['clipping'] != 'semiarido' else '',
@@ -432,139 +432,106 @@ def getTotalByCounty(params):
     data=toGroupedDict(rawdata,indicLevelYears[int(params['indicator_id'])]['level'])
     return data
 
-def getInfoByState(params):
-    return {'nextlevel': getDictResultset(
-        '''
-    select distinct id,pessimist,
-                first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
-                first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
-                round(first_value(value) over (partition by id order by year desc range between unbounded preceding and unbounded following)::numeric,2)::float as value 
-    from 
-    (
-    select i.id,i.pessimist, title, year, avg(value) as VALUE
-                from indicator_indicator ii   inner join indicator i
-             on ii.indicator_id_detail = i.id
-       inner join value v
-               on v.indicator_id = ii.indicator_id_detail
-       inner join county c
-               on v.county_id = c.id
-            where ii.indicator_id_master = {0}          
-              and (v.year <= {1} or year = {2})
-              and {3}
-            and state_id = {4}
-              and i.level = {5}
-         group by i.id,i.pessimist, title, year
-    ) A
-    order by 5 desc'''.format(
-            params['indicator_id'],
-            params['year'] if int(params['year']) <= currentYear else currentYear,
-            params['year'],
-            'scenario_id is null' if int(params['year']) <= currentYear
-            else '((scenario_id = {0}) or (scenario_id is null))'.format(params['scenario_id']),
-            params['resolution_id'],
-            indicLevelYears[int(params['indicator_id'])]['level'] + 1
-        )),
-        'lastlevel': getDictResultset(
-        '''select distinct id,pessimist,
-            first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
-            first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
-            round(first_value(value) over (partition by id order by year desc range between unbounded preceding and unbounded following)::numeric)::integer as value 
-from 
-(select i.id,i.pessimist,title,master_year as year,avg(value) as value
-        from contribution ct
-     INNER JOIN indicator i
-             on i.id = ct.detail_indicator_id 
-     inner join county c
-           on ct.county_id = c.id
-          where master_indicator_id = {0}          
-            and (master_year <= {1} or master_year = {2})
-            and {3}
-            and state_id = {4}
-       group by i.id,i.pessimist,title,master_year
-) A
-order by 5 desc'''.format(
-            params['indicator_id'],
-            params['year'] if int(params['year']) <= currentYear else currentYear,
-            params['year'],
-            'master_scenario_id is null' if int(params['year']) <= currentYear
-            else '((master_scenario_id = {0}) or (master_scenario_id is null))'.format(params['scenario_id']),
-            params['resolution_id']
-        ))}
 
-def getInfoByMesoregion(params):
-    if indicLevelYears[int(params['indicator_id'])]['level'] == 6:
-        raise Exception('sismoiErr: getInfo: o indicator_id = {0} é de nível 6'.format(params['indicator_id']))
 
-    data = {'nextlevel': getDictResultset(
-        '''
-    select distinct id,pessimist,
-                first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
-                first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
-                round(first_value(value) over (partition by id order by year desc range between unbounded preceding and unbounded following)::numeric,2)::float as value 
-    from 
+def getInfoByCounty(params):
+    value = sisCommons.getValue("""select round(value::numeric,2)::float as value
+         from value v
+        where indicator_id = {0}
+              and (v.year  = {1})
+                   and {2}
+                 and county_id = {3}
+     """.format(params['indicator_id'],
+                params['year'],
+                'scenario_id is null' if int(params['year']) <= sisCommons.currentYear
+                                                else 'scenario_id = {0}'.format(
+                    params['scenario_id']),
+                params['resolution_id']))
+    return {'id': params['resolution_id'],
+            'name': sisCommons.getValue("select concat(name,'/',state) as name from county where id = {0}".format(
+                params['resolution_id'])),
+            'value': str(value).replace('.', ','),
+            'valuecolor': sisCommons.featureColor(value,
+                                                  sisCommons.indicLevelYears[int(params['indicator_id'])]['pessimist']),
+            'nextlevel': sisCommons.getDictResultset(
+                '''select distinct i.id,i.pessimist,
+                      first_value(title) over (partition by i.id order by year desc range between unbounded preceding and unbounded following) as title,
+                      first_value(simple_description) over (partition by i.id order by year desc range between unbounded preceding and unbounded following) as simple_description,
+                      first_value(complete_description) over (partition by i.id order by year desc range between unbounded preceding and unbounded following) as complete_description,
+                      first_value(year) over (partition by i.id order by year desc range between unbounded preceding and unbounded following) as year,
+                      replace(round(first_value(value) over (partition by i.id order by year desc range between unbounded preceding and unbounded following)::numeric,1)::varchar,'.',',') as value 
+                      from indicator_indicator ii   inner join indicator i
+                   on ii.indicator_id_detail = i.id
+             inner join value v
+                     on v.indicator_id = ii.indicator_id_detail
+                  where ii.indicator_id_master = {0}          
+                    and (v.year <= {1} or year = {2})
+                    and {3}
+                    and v.county_id = {4}
+               order by value desc'''.format(
+                    params['indicator_id'],
+                    params['year'] if int(params['year']) <= sisCommons.currentYear else sisCommons.currentYear,
+                    params['year'],
+                    'scenario_id is null' if int(params['year']) <= sisCommons.currentYear \
+                        else '((scenario_id = {0}) or (scenario_id is null))'.format(params['scenario_id']),
+                    params['resolution_id']
+                )), 'lastlevel': sisCommons.getDictResultset(
+            '''select id,title,simple_description,complete_description,year,case when value > 1 then replace(cast(cast(value as decimal(6,1)) as varchar),'.',',') else '<1' end as value from
     (
-    select i.id,i.pessimist, title, year, avg(value) as VALUE
-                from indicator_indicator ii   inner join indicator i
-             on ii.indicator_id_detail = i.id
-       inner join value v
-               on v.indicator_id = ii.indicator_id_detail
-       inner join county c
-               on v.county_id = c.id
-            where ii.indicator_id_master = {0}          
-              and (v.year <= {1} or year = {2})
-              and {3}
-            and mesoregion_id = {4}
-              and i.level = {5}
-         group by i.id,i.pessimist, title, year
-    ) A
-    order by 5 desc'''.format(
-            params['indicator_id'],
-            params['year'] if int(params['year']) <= currentYear else currentYear,
-            params['year'],
-            'scenario_id is null' if int(params['year']) <= currentYear
-            else '((scenario_id = {0}) or (scenario_id is null))'.format(params['scenario_id']),
-            params['resolution_id'],
-            indicLevelYears[int(params['indicator_id'])]['level'] + 1
-        )),
-        'lastlevel': getDictResultset(
-        '''select distinct id,pessimist,
-            first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
-            first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
-            round(first_value(value) over (partition by id order by year desc range between unbounded preceding and unbounded following)::numeric)::integer as value 
-from 
-(select distinct i.id,i.pessimist,title,master_year as year,avg(value) as value
-        from contribution ct
-     INNER JOIN indicator i
-             on i.id = ct.detail_indicator_id 
-     inner join county c
-           on ct.county_id = c.id
-          where master_indicator_id = {0}          
-            and (master_year <= {1} or master_year = {2})
-            and {3}
-            and mesoregion_id = {4}
-       group by i.id,i.pessimist,title,master_year
-) A
-order by 5 desc'''.format(
-            params['indicator_id'],
-            params['year'] if int(params['year']) <= currentYear else currentYear,
-            params['year'],
-            'master_scenario_id is null' if int(params['year']) <= currentYear
-            else '((master_scenario_id = {0}) or (master_scenario_id is null))'.format(params['scenario_id']),
-            params['resolution_id']
-        ))}
-    return data
+    select distinct i.id,i.pessimist,
+                  first_value(title) over (partition by i.id order by master_year desc range between unbounded preceding and unbounded following) as title,
+                  first_value(simple_description) over (partition by i.id order by master_year desc range between unbounded preceding and unbounded following) as simple_description,
+                  first_value(complete_description) over (partition by i.id order by master_year desc range between unbounded preceding and unbounded following) as complete_description,
+                  first_value(master_year) over (partition by i.id order by master_year  desc range between unbounded preceding and unbounded following) as year,
+                  round(first_value(value) over (partition by i.id order by master_year desc range between unbounded preceding and unbounded following)::numeric * 100.0,1)::float as value   
+            from contribution ct
+         INNER JOIN indicator i
+                 on i.id = ct.detail_indicator_id 
+              where master_indicator_id = {0}          
+                and (master_year <= {1} or master_year = {2})
+                and {3}
+                and county_id = {4}
+           order by value desc
+           ) a'''.format(
+                params['indicator_id'],
+                params['year'] if int(params['year']) <= sisCommons.currentYear else sisCommons.currentYear,
+                params['year'],
+                'master_scenario_id is null' if int(params['year']) <= sisCommons.currentYear
+                else '((master_scenario_id = {0}) or (master_scenario_id is null))'.format(params['scenario_id']),
+                params['resolution_id']
+            ))}
+
 
 def getInfoByMicroregion(params):
-    if indicLevelYears[int(params['indicator_id'])]['level'] == 6:
-        raise Exception('sismoiErr: getInfo: o indicator_id = {0} é de nível 6'.format(params['indicator_id']))
-
-    data = {'nextlevel':getDictResultset('''select distinct id,pessimist,
+    value = sisCommons.getValue("""select round(avg(value)::numeric,2)::float as value
+        from value v
+        inner join county c
+        on v.county_id = c.id
+                  and indicator_id = {0}
+          and (v.year = {1})
+                  and {2}
+                and microregion_id = {3}
+    """.format(params['indicator_id'],
+               params['year'],
+               'scenario_id is null' if int(params['year']) <= sisCommons.currentYear \
+                                                   else '(scenario_id = {0})'.format(
+                   params['scenario_id']),
+               params['resolution_id']))
+    return {'id': params['resolution_id'],
+            'name': sisCommons.getValue("select concat(name,'/',state) as name from microregion where id = {0}".format(
+                params['resolution_id'])),
+            'value': str(value).replace('.', ','),
+            'valuecolor': sisCommons.featureColor(value,
+                                                  sisCommons.indicLevelYears[int(params['indicator_id'])]['pessimist']),
+            'nextlevel': sisCommons.getDictResultset('''select distinct id,pessimist,
             first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
+            first_value(simple_description) over (partition by id order by year desc range between unbounded preceding and unbounded following) as simple_description,
+            first_value(complete_description) over (partition by id order by year desc range between unbounded preceding and unbounded following) as complete_description,
             first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
-            round(first_value(value) over (partition by id order by year desc range between unbounded preceding and unbounded following)::numeric,2)::float as value 
+            replace(round(first_value(value) over (partition by id order by year desc range between unbounded preceding and unbounded following)::numeric,1)::varchar,'.',',') as value 
 from 
 (
-select i.id,i.pessimist, title, year, avg(value) as VALUE
+select i.id,i.pessimist, title, simple_description,complete_description, year, avg(value) as VALUE
             from indicator_indicator ii   inner join indicator i
          on ii.indicator_id_detail = i.id
    inner join value v
@@ -572,95 +539,221 @@ select i.id,i.pessimist, title, year, avg(value) as VALUE
    inner join county c
            on v.county_id = c.id
         where ii.indicator_id_master = {0}          
-          and (v.year <= {1} or year = {2})
+              and (v.year <= {1} or year = {2})
           and {3}
-          and c.microregion_id = 18
-          and i.level = {5}
-     group by i.id,i.pessimist, title, year
+          and c.microregion_id = {4}
+     group by i.id,i.pessimist, title, simple_description,complete_description, year
 ) A
-order by 5 desc'''.format(
-        params['indicator_id'],
-        params['year'] if int(params['year']) <= currentYear else currentYear,
-        params['year'],
-        'scenario_id is null' if int(params['year']) <= currentYear
-        else '((scenario_id = {0}) or (scenario_id is null))'.format(params['scenario_id']),
-        params['resolution_id'],
-        indicLevelYears[int(params['indicator_id'])]['level'] + 1
-    )),
-        'lastlevel':getDictResultset('''select distinct id,pessimist,
-            first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
-            first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
-            round(first_value(value) over (partition by id order by year desc range between unbounded preceding and unbounded following)::numeric)::integer as value 
-from 
-(select i.id,i.pessimist,title,master_year as year,avg(value) as value
-        from contribution ct
-     INNER JOIN indicator i
-             on i.id = ct.detail_indicator_id 
-     inner join county c
-           on ct.county_id = c.id
-          where master_indicator_id = {0}          
-            and (master_year <= {1} or master_year = {2})
-            and {3}
-            and microregion_id = {4}
-       group by i.id,i.pessimist,title,master_year
-) A
-order by 5 desc'''.format(
-            params['indicator_id'],
-            params['year'] if int(params['year']) <= currentYear else currentYear,
-            params['year'],
-            'master_scenario_id is null' if int(params['year']) <= currentYear
-            else '((master_scenario_id = {0}) or (master_scenario_id is null))'.format(params['scenario_id']),
-            params['resolution_id']
-        ))}
-    return data
+order by value desc'''.format(
+                params['indicator_id'],
+                params['year'] if int(params['year']) <= sisCommons.currentYear else sisCommons.currentYear,
+                params['year'],
+                'scenario_id is null' if int(params['year']) <= sisCommons.currentYear
+                else '((scenario_id = {0}) or (scenario_id is null))'.format(params['scenario_id']),
+                params['resolution_id']
+            )),
+            'lastlevel':
+                sisCommons.getDictResultset(
+                    '''select id,title,simple_description,complete_description,year,
+                       case when value > 1 then replace(cast(cast(value as decimal(6,1)) as varchar),'.',',') else '<1' end as value from
+            (
+              select distinct id,pessimist,
+                        first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
+                        first_value(simple_description) over (partition by id order by year desc range between unbounded preceding and unbounded following) as simple_description,
+                        first_value(complete_description) over (partition by id order by year desc range between unbounded preceding and unbounded following) as complete_description,
+                        first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
+                        round(first_value(value) over (partition by id order by year desc range between unbounded preceding and unbounded following)::numeric * 100.0,1)::float as value   
+            
+            from 
+            (select i.id,i.pessimist,title,simple_description,complete_description, master_year as year,avg(value) as value
+                    from contribution ct
+                 INNER JOIN indicator i
+                         on i.id = ct.detail_indicator_id 
+                 inner join county c
+                       on ct.county_id = c.id
+                      where master_indicator_id = {0}          
+                        and (master_year <= {1} or master_year = {2})
+                        and {3}
+                        and microregion_id = {4}
+                   group by i.id,i.pessimist,title,simple_description,complete_description, master_year
+            ) A
+            order by value desc) B'''.format(
+                        params['indicator_id'],
+                        params['year'] if int(params['year']) <= sisCommons.currentYear else sisCommons.currentYear,
+                        params['year'],
+                        'master_scenario_id is null' if int(params['year']) <= sisCommons.currentYear
+                        else '((master_scenario_id = {0}) or (master_scenario_id is null))'.format(
+                            params['scenario_id']),
+                        params['resolution_id']
+                    ))}
 
-def getInfoByCounty(params):
-    if indicLevelYears[int(params['indicator_id'])]['level'] == 6:
-        raise Exception('sismoiErr: getInfo: o indicator_id = {0} é de nível 6'.format(params['indicator_id']))
 
-    data={'nextlevel':getDictResultset(
-      '''select distinct i.id,i.pessimist,
-            first_value(title) over (partition by i.id order by year desc range between unbounded preceding and unbounded following) as title,
-            first_value(year) over (partition by i.id order by year desc range between unbounded preceding and unbounded following) as year,
-            round(first_value(value) over (partition by i.id order by year desc range between unbounded preceding and unbounded following)::numeric,2)::float as value 
-            from indicator_indicator ii   inner join indicator i
-         on ii.indicator_id_detail = i.id
-   inner join value v
-           on v.indicator_id = ii.indicator_id_detail
-        where ii.indicator_id_master = {0}          
-          and (v.year <= {1} or year = {2})
-          and {3}
-          and v.county_id = {4}
-          and i.level = {5}
-     order by 5 desc'''.format(
-          params['indicator_id'],
-          params['year'] if int(params['year']) <= currentYear else currentYear,
-          params['year'],
-          'scenario_id is null' if int(params['year']) <= currentYear
-                                else '((scenario_id = {0}) or (scenario_id is null))'.format(params['scenario_id']),
-          params['resolution_id'],
-          indicLevelYears[int(params['indicator_id'])]['level']+1
-    )),'lastlevel':getDictResultset(
-        '''select distinct i.id,i.pessimist,
-              first_value(title) over (partition by i.id order by master_year desc range between unbounded preceding and unbounded following) as title,
-              first_value(master_year) over (partition by i.id order by master_year  desc range between unbounded preceding and unbounded following) as year,
-              round(first_value(value) over (partition by i.id order by master_year desc range between unbounded preceding and unbounded following)::numeric)::integer as value 
-        from contribution ct
-     INNER JOIN indicator i
-             on i.id = ct.detail_indicator_id 
-          where master_indicator_id = {0}          
-            and (master_year <= {1} or master_year = {2})
-            and {3}
-            and county_id = {4}
-       order by 5 desc'''.format(
-            params['indicator_id'],
-            params['year'] if int(params['year']) <= currentYear else currentYear,
-            params['year'],
-            'master_scenario_id is null' if int(params['year']) <= currentYear
-            else '((master_scenario_id = {0}) or (master_scenario_id is null))'.format(params['scenario_id']),
-            params['resolution_id']
-        ))}
-    return data
+def getInfoByMesoregion(params):
+    value = sisCommons.getValue("""select round(avg(value)::numeric,2)::float as value
+    from value v
+    inner join county c
+    on v.county_id = c.id
+              and indicator_id = {0}
+          and (v.year = {1})
+              and {2}
+            and mesoregion_id = {3}
+""".format(params['indicator_id'],
+           params['year'],
+           'scenario_id is null' if int(params['year']) <= sisCommons.currentYear \
+                                               else '((scenario_id = {0}) or (scenario_id is null))'.format(
+               params['scenario_id']),
+           params['resolution_id']))
+    return {'id': params['resolution_id'],
+            'name': sisCommons.getValue("select concat(name,'/',state) as name from mesoregion where id = {0}".format(
+                params['resolution_id'])),
+            'value': str(value).replace('.', ','),
+            'valuecolor': sisCommons.featureColor(value,
+                                                  sisCommons.indicLevelYears[int(params['indicator_id'])]['pessimist']),
+            'nextlevel': sisCommons.getDictResultset(
+                '''
+            select distinct id,pessimist,
+                        first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
+                        first_value(simple_description) over (partition by id order by year desc range between unbounded preceding and unbounded following) as simple_description,
+                        first_value(complete_description) over (partition by id order by year desc range between unbounded preceding and unbounded following) as complete_description,
+                        first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
+                        replace(round(first_value(value) over (partition by id order by year desc range between unbounded preceding and unbounded following)::numeric,1)::varchar,'.',',') as value 
+            from 
+            (
+            select i.id,i.pessimist, title, simple_description,complete_description, year, avg(value) as VALUE
+                        from indicator_indicator ii   inner join indicator i
+                     on ii.indicator_id_detail = i.id
+               inner join value v
+                       on v.indicator_id = ii.indicator_id_detail
+               inner join county c
+                       on v.county_id = c.id
+                    where ii.indicator_id_master = {0}          
+                      and (v.year <= {1} or year = {2})
+                      and {3}
+                    and mesoregion_id = {4}
+                 group by i.id,i.pessimist, title, simple_description,complete_description,year
+            ) A
+            order by value desc'''.format(
+                    params['indicator_id'],
+                    params['year'] if int(params['year']) <= sisCommons.currentYear else sisCommons.currentYear,
+                    params['year'],
+                    'scenario_id is null' if int(params['year']) <= sisCommons.currentYear
+                    else '((scenario_id = {0}) or (scenario_id is null))'.format(params['scenario_id']),
+                    params['resolution_id']
+                )),
+            'lastlevel': sisCommons.getDictResultset(
+                '''select id,title,simple_description,complete_description,year,
+                   case when value > 1 then replace(cast(cast(value as decimal(6,1)) as varchar),'.',',') else '<1' end as value from
+        (select distinct id,pessimist,
+                    first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
+                    first_value(simple_description) over (partition by id order by year desc range between unbounded preceding and unbounded following) as simple_description,
+                    first_value(complete_description) over (partition by id order by year desc range between unbounded preceding and unbounded following) as complete_description,
+                    first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
+                    round(first_value(value) over (partition by id order by year desc range between unbounded preceding and unbounded following)::numeric * 100,1)::float as value 
+        from 
+        (select distinct i.id,i.pessimist,title,simple_description,complete_description,master_year as year,avg(value) as value
+                from contribution ct
+             INNER JOIN indicator i
+                     on i.id = ct.detail_indicator_id 
+             inner join county c
+                   on ct.county_id = c.id
+                  where master_indicator_id = {0}          
+                    and (master_year <= {1} or master_year = {2})
+                    and {3}
+                    and mesoregion_id = {4}
+               group by i.id,i.pessimist,title,simple_description,complete_description,master_year
+        ) A
+        order by value desc) B'''.format(
+                    params['indicator_id'],
+                    params['year'] if int(params['year']) <= sisCommons.currentYear else sisCommons.currentYear,
+                    params['year'],
+                    'master_scenario_id is null' if int(params['year']) <= sisCommons.currentYear
+                    else '((master_scenario_id = {0}) or (master_scenario_id is null))'.format(params['scenario_id']),
+                    params['resolution_id']
+                ))}
+
+
+def getInfoByState(params):
+    value = sisCommons.getValue("""select round(avg(value)::numeric,2)::float as value
+         from value v
+         inner join county c
+         on v.county_id = c.id
+                   and indicator_id = {0}
+                   and (v.year <= {1})
+                   and {2}
+                 and state_id = {3}
+     """.format(params['indicator_id'],
+                params['year'],
+                'scenario_id is null' if int(params['year']) <= sisCommons.currentYear \
+                                                    else '((scenario_id = {0}) or (scenario_id is null))'.format(
+                    params['scenario_id']),
+                params['resolution_id']))
+    return {'id': params['resolution_id'],
+            'name': sisCommons.getValue("select name from state where id = {0}".format(
+                params['resolution_id'])),
+            'value': str(value).replace('.', ','),
+            'valuecolor': sisCommons.featureColor(value,
+                                                  sisCommons.indicLevelYears[int(params['indicator_id'])]['pessimist']),
+            'nextlevel': sisCommons.getDictResultset(
+                '''
+            select distinct id,pessimist,
+                        first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
+                        first_value(simple_description) over (partition by id order by year desc range between unbounded preceding and unbounded following) as simple_description,
+                        first_value(complete_description) over (partition by id order by year desc range between unbounded preceding and unbounded following) as complete_description,
+                        first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
+                        replace(round(first_value(value) over (partition by id order by year desc range between unbounded preceding and unbounded following)::numeric,1)::varchar,'.',',') as value 
+            from 
+            (
+            select i.id,i.pessimist, title,simple_description,complete_description, year, avg(value) as VALUE
+                        from indicator_indicator ii   inner join indicator i
+                     on ii.indicator_id_detail = i.id
+               inner join value v
+                       on v.indicator_id = ii.indicator_id_detail
+               inner join county c
+                       on v.county_id = c.id
+                    where ii.indicator_id_master = {0}          
+                      and (v.year <= {1} or year = {2})
+                      and {3}
+                    and state_id = {4}
+                 group by i.id,i.pessimist, title,simple_description,complete_description, year
+            ) A
+            order by value desc'''.format(
+                    params['indicator_id'],
+                    sisCommons.currentYear,
+                    params['year'],
+                    'scenario_id is null' if int(params['year']) <= sisCommons.currentYear
+                    else '((scenario_id = {0}) or (scenario_id is null))'.format(params['scenario_id']),
+                    params['resolution_id']
+                )),
+            'lastlevel': sisCommons.getDictResultset(
+                '''select id,title,simple_description,complete_description,year,
+                   case when value > 1 then replace(cast(cast(value as decimal(6,1)) as varchar),'.',',') else '<1' end as value from
+        (select distinct id,pessimist,
+                    first_value(title) over (partition by id order by year desc range between unbounded preceding and unbounded following) as title,
+                    first_value(simple_description) over (partition by id order by year desc range between unbounded preceding and unbounded following) as simple_description,
+                    first_value(complete_description) over (partition by id order by year desc range between unbounded preceding and unbounded following) as complete_description,
+                    first_value(year) over (partition by id order by year desc range between unbounded preceding and unbounded following) as year,
+                    round(first_value(value) over (partition by id order by year desc range between unbounded preceding and unbounded following)::numeric * 100,1)::float as value 
+        from 
+        (select i.id,i.pessimist,title,simple_description,complete_description,master_year as year,avg(value) as value
+                from contribution ct
+             INNER JOIN indicator i
+                     on i.id = ct.detail_indicator_id 
+             inner join county c
+                   on ct.county_id = c.id
+                  where master_indicator_id = {0}          
+                    and (master_year <= {1} or master_year = {2})
+                    and {3}
+                    and state_id = {4}
+               group by i.id,i.pessimist,title,simple_description,complete_description,master_year
+        ) A
+        order by value desc) B'''.format(
+                    params['indicator_id'],
+                    sisCommons.currentYear,
+                    params['year'],
+                    'master_scenario_id is null' if int(params['year']) <= sisCommons.currentYear
+                    else '((master_scenario_id = {0}) or (master_scenario_id is null))'.format(params['scenario_id']),
+                    params['resolution_id']
+                ))}
 
 def getStateGeometry(clipping):
     return getValue("""
@@ -670,7 +763,7 @@ def getStateGeometry(clipping):
     (select 'FeatureCollection' as "type", array_to_json(array_agg(f)) as "features"
     from
        (select 'Feature' as "type",
-                ST_AsGeoJSON(ST_Simplify(ST_Force_2D(geom), 0.0003), 4)::json as "geometry",
+                ST_AsGeoJSON(ST_Centroid(geom))::json as "geometry",
                 (select json_strip_nulls(row_to_json(t))
         from
                 (select
@@ -694,10 +787,10 @@ def getMesoregionGeometry(clipping):
         from
                 (select
                  id,
-                 name,
+                  concat(m.name,'/',m.state) as name,
                  state) t
        ) as "properties"
-       from mesoregion
+       from mesoregion m
        {0}
     ) as f
     ) as fc""".format(("where state = '{0}'".format(clipping ) if clipping != 'semiarido' else '')))
@@ -714,10 +807,10 @@ def getMicroregionGeometry(clipping):
         from
                 (select
                  id,
-                 name,
+                 concat(m.name,'/',m.state) as name,
                  state) t
        ) as "properties"
-       from microregion
+       from microregion m
        {0}
     ) as f
     ) as fc""".format(("where state = '{0}'".format(clipping ) if clipping != 'semiarido' else '')))
@@ -734,10 +827,10 @@ def getCountyGeometry(clipping):
         from
                 (select
                  id,
-                 name,
+                 concat(c.name,'/',c.state) as name,
                  state) t
        ) as "properties"
-       from county
+       from county c
        {0}
     ) as f
     ) as fc""".format(("where state = '{0}'".format(clipping ) if clipping != 'semiarido' else '')))
@@ -745,7 +838,7 @@ def getCountyGeometry(clipping):
 @app.route("/sismoi/getHierarchy", methods=['GET'])
 def getHierarchy():
     incache=inCache('getHierarchy@')
-    log('getHieararchy', '', incache)
+    log('getHierarchy', '', incache)
     if incache:
         return fromCache('getHierarchy@')
     try:
@@ -839,7 +932,8 @@ def getGeometryAndData(sparams):
         feature['properties']['name'] = row['name']
         feature['properties']['value'] = float(row['value'])
         feature['properties']['style'] = {'color': '#d7d7d7',
-                                          'fillcolor': featureColor(float(row['value']), row['pessimist']), 'weight': 1}
+                                          'fillcolor': featureColor(float(row['value']), row['pessimist']),
+                                          'weight': 1}
     ret=json.dumps(geometry)
     toCache('getGeometryAndData@'+sparams,ret)
     return ret
@@ -870,28 +964,23 @@ def getTotal(sparams):
 # clipping=semiarido,resolution=municipio,indicator_id=2,scenario_id=1,year=2030
 @app.route('/sismoi/getInfo/<sparams>', methods=['GET']) # 'clipping=semiarido,resolution=municipio,indicator_id=2,scenario_id=1,year=2030'
 def getInfo(sparams):
-    incache=inCache('getInfo@'+sparams)
-    log('getInfo',sparams,incache)
-    if incache:
-        return fromCache('getInfo@'+sparams)
-    errorMsg,params=validateClippingResolution(sparams)
-    if errorMsg == '' and (not 'indicator_id' in params):
-        errorMsg = "sismoiErr: É obrigatório especificar o indicador (indicator_id)."
-    if 'resolution_id' not in params.keys():
-        errorMsg = "sismoiErr: É obrigatório especificar o id na resolução indicada."
-    if errorMsg != '':
-        return errorMsg, params
+    # TRATAMENTO PARA CENARIOS COM ANOS MENORES DO QUE O ATUAL
+    if (sparams["scenario_id"]).lower() != "null" and int(sparams["year"]) <= datetime.datetime.now().year:
+        sparams["scenario_id"] = "null"
+
+    sisCommons.log('getInfo', sparams, False)
+    errorMsg, params = sisCommons.validateParams(sparams)
+    if (errorMsg != ''):
+        raise Exception('sismoiErr: getInfo: ' + errorMsg)
     if params['resolution'] == 'municipio':
-        data=getInfoByCounty(params)
+        data = getInfoByCounty(params)
     elif params['resolution'] == 'microrregiao':
-        data=getInfoByMicroregion(params)
+        data = getInfoByMicroregion(params)
     elif params['resolution'] == 'mesorregiao':
         data = getInfoByMesoregion(params)
     elif params['resolution'] == 'estado':
-        data=getInfoByState(params)
-    ret=json.dumps(data)
-    toCache('getInfo@'+sparams,ret)
-    return ret
+        data = getInfoByState(params)
+    return data
 
 # indicator_id=2
 @app.route('/sismoi/getIndicatorData/<sparams>', methods=['GET'])
@@ -928,11 +1017,11 @@ def getStats():
     cacheHits=0
     accesses=0
     line=('='*84)+'\n'
-    s=['                                   SISMOI Stats\n',
+    s=[(' '*35)+'SISMOI Stats\n',
        line,
         "{:<22} {:<6} {:<12} {:<15} {:<17} {:<10}\n".format('Function', 'Calls', 'Cache Hits', 'W/O Cache(s)', 'With Cache(ms)','Ratio'),
        line]
-    for func, values  in funcStats.items():
+    for func, values in funcStats.items():
         withoutcache=str(round(values['elapsedwocache']/values['countwocache'],3)) if values['countwocache'] > 0 \
             else '-'
         withcache=str(round(values['elapsedwithcache']*1000/values['countwithcache'],6)) if values['countwithcache'] > 0 \
@@ -964,14 +1053,16 @@ Log: {8}
 if __name__ == "__main__":
     try:
         args = ProcessCmdLine()
+        sisCommons.indicLevelYears = getIndicLevelYears()
+        x=getDictResultset("select state from state")
+
         clippings = clippings + getStates()
-        indicLevelYears = getIndicLevelYears()
+        indicLevelYears: dict = getIndicLevelYears()
         cacheType=args.cachetype
-
-        cacheType = 0
-        args.log = True
-
         statsOff = args.statsoff
+        start = time.perf_counter()
+
+        printDebug(getInfo(dict(token.split('=') for token in 'clipping=semiarido,resolution=estado,indicator_id=2,scenario_id=1,resolution_id=23,year=2030'.split(','))))
 
         app.run(host=args.host, port=args.port, debug=args.debug)
     except Exception as e:
